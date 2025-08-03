@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Brain, Plus, Upload, Play, Edit, Trash, BarChart3, LogOut, FileText, Users, Clock, Activity } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Brain, Plus, Upload, Play, Edit, Trash, BarChart3, LogOut, FileText, Users, Clock, Activity, Download, HelpCircle } from "lucide-react";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -25,6 +27,17 @@ export default function AdminDashboard() {
     scoringType: "speed",
     excelFile: null as File | null
   });
+
+  const [showManualQuiz, setShowManualQuiz] = useState(false);
+  const [manualQuestions, setManualQuestions] = useState([
+    {
+      text: "",
+      options: ["", "", "", ""],
+      correctAnswer: "Option A",
+      isBonus: false,
+      timeLimit: 45
+    }
+  ]);
 
   // Redirect if not admin
   if (!user?.isAdmin) {
@@ -94,10 +107,19 @@ export default function AdminDashboard() {
   });
 
   const handleCreateQuiz = () => {
-    if (!newQuiz.title || !newQuiz.passkey || !newQuiz.excelFile) {
+    if (!newQuiz.title || !newQuiz.passkey) {
       toast({
         title: "Error",
-        description: "Please fill all fields and upload an Excel file",
+        description: "Please fill title and passkey",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!newQuiz.excelFile && manualQuestions.every(q => !q.text)) {
+      toast({
+        title: "Error", 
+        description: "Please either upload an Excel file or add manual questions",
         variant: "destructive"
       });
       return;
@@ -108,9 +130,70 @@ export default function AdminDashboard() {
     formData.append("passkey", newQuiz.passkey);
     formData.append("defaultTimePerQuestion", newQuiz.defaultTimePerQuestion);
     formData.append("scoringType", newQuiz.scoringType);
-    formData.append("excelFile", newQuiz.excelFile);
+    
+    if (newQuiz.excelFile) {
+      formData.append("excelFile", newQuiz.excelFile);
+    } else {
+      // Filter out empty questions
+      const validQuestions = manualQuestions.filter(q => q.text.trim() && q.options.every(opt => opt.trim()));
+      formData.append("questions", JSON.stringify(validQuestions));
+    }
 
     createQuizMutation.mutate(formData);
+  };
+
+  const addQuestion = () => {
+    setManualQuestions([...manualQuestions, {
+      text: "",
+      options: ["", "", "", ""],
+      correctAnswer: "Option A", 
+      isBonus: false,
+      timeLimit: 45
+    }]);
+  };
+
+  const updateQuestion = (index: number, field: string, value: any) => {
+    const updated = [...manualQuestions];
+    if (field === 'options') {
+      updated[index].options[value.index] = value.value;
+    } else {
+      (updated[index] as any)[field] = value;
+    }
+    setManualQuestions(updated);
+  };
+
+  const removeQuestion = (index: number) => {
+    setManualQuestions(manualQuestions.filter((_, i) => i !== index));
+  };
+
+  const downloadTemplate = async () => {
+    try {
+      const response = await fetch("/api/quiz-template", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("Failed to download template");
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = 'quiz-template.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Success",
+        description: "Template downloaded successfully"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download template",
+        variant: "destructive"
+      });
+    }
   };
 
   const quizzes = quizzesData?.quizzes || [];
@@ -220,10 +303,130 @@ export default function AdminDashboard() {
               </div>
               
               <div className="lg:col-span-2">
-                <Label htmlFor="excel">Upload Excel File</Label>
+                <div className="flex items-center justify-between mb-4">
+                  <Label>Questions</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={downloadTemplate}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Excel Template
+                    </Button>
+                    <Dialog open={showManualQuiz} onOpenChange={setShowManualQuiz}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Manual Questions
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Add Questions Manually</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-6">
+                          {manualQuestions.map((question, index) => (
+                            <Card key={index} className="p-4">
+                              <div className="flex items-center justify-between mb-4">
+                                <h4 className="font-medium">Question {index + 1}</h4>
+                                {manualQuestions.length > 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeQuestion(index)}
+                                  >
+                                    <Trash className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                              
+                              <div className="space-y-4">
+                                <div>
+                                  <Label>Question Text</Label>
+                                  <Textarea
+                                    placeholder="Enter your question here..."
+                                    value={question.text}
+                                    onChange={(e) => updateQuestion(index, 'text', e.target.value)}
+                                    className="mt-2"
+                                  />
+                                </div>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                  {question.options.map((option, optIndex) => (
+                                    <div key={optIndex}>
+                                      <Label>Option {String.fromCharCode(65 + optIndex)}</Label>
+                                      <Input
+                                        placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
+                                        value={option}
+                                        onChange={(e) => updateQuestion(index, 'options', { index: optIndex, value: e.target.value })}
+                                        className="mt-2"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                <div className="grid grid-cols-3 gap-4">
+                                  <div>
+                                    <Label>Correct Answer</Label>
+                                    <Select
+                                      value={question.correctAnswer}
+                                      onValueChange={(value) => updateQuestion(index, 'correctAnswer', value)}
+                                    >
+                                      <SelectTrigger className="mt-2">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="Option A">Option A</SelectItem>
+                                        <SelectItem value="Option B">Option B</SelectItem>
+                                        <SelectItem value="Option C">Option C</SelectItem>
+                                        <SelectItem value="Option D">Option D</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  
+                                  <div>
+                                    <Label>Time Limit (seconds)</Label>
+                                    <Input
+                                      type="number"
+                                      value={question.timeLimit}
+                                      onChange={(e) => updateQuestion(index, 'timeLimit', parseInt(e.target.value) || 45)}
+                                      className="mt-2"
+                                    />
+                                  </div>
+                                  
+                                  <div className="flex items-center space-x-2 mt-8">
+                                    <input
+                                      type="checkbox"
+                                      id={`bonus-${index}`}
+                                      checked={question.isBonus}
+                                      onChange={(e) => updateQuestion(index, 'isBonus', e.target.checked)}
+                                    />
+                                    <Label htmlFor={`bonus-${index}`}>Bonus Question</Label>
+                                  </div>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                          
+                          <div className="flex justify-between">
+                            <Button variant="outline" onClick={addQuestion}>
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Another Question
+                            </Button>
+                            <Button onClick={() => setShowManualQuiz(false)}>
+                              Done
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                </div>
+                
                 <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 transition-colors">
                   <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-600 mb-2">Drop your Excel file here or click to browse</p>
+                  <p className="text-gray-600 mb-2">Upload Excel file OR use manual questions</p>
                   <p className="text-xs text-gray-500 mb-3">Supports .xlsx format with questions, options, and answers</p>
                   <Input
                     type="file"
@@ -232,14 +435,28 @@ export default function AdminDashboard() {
                     className="hidden"
                     id="excel-upload"
                   />
-                  <Button 
-                    variant="outline" 
-                    onClick={() => document.getElementById('excel-upload')?.click()}
-                  >
-                    Choose File
-                  </Button>
+                  <div className="flex gap-2 justify-center">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => document.getElementById('excel-upload')?.click()}
+                    >
+                      Choose Excel File
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={downloadTemplate}
+                    >
+                      <HelpCircle className="h-4 w-4 mr-2" />
+                      Download Template
+                    </Button>
+                  </div>
                   {newQuiz.excelFile && (
                     <p className="mt-2 text-sm text-green-600">Selected: {newQuiz.excelFile.name}</p>
+                  )}
+                  {manualQuestions.some(q => q.text.trim()) && (
+                    <p className="mt-2 text-sm text-blue-600">
+                      {manualQuestions.filter(q => q.text.trim()).length} manual questions added
+                    </p>
                   )}
                 </div>
               </div>
@@ -273,13 +490,30 @@ export default function AdminDashboard() {
               </div>
               
               <div className="lg:col-span-2">
+                <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                  <h4 className="font-medium mb-2 flex items-center">
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    Excel Template Format
+                  </h4>
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p><strong>Required columns:</strong></p>
+                    <ul className="list-disc list-inside space-y-1 ml-4">
+                      <li><strong>Question:</strong> The question text</li>
+                      <li><strong>Option A, Option B, Option C, Option D:</strong> Multiple choice options</li>
+                      <li><strong>Correct Answer:</strong> Must be "Option A", "Option B", "Option C", or "Option D"</li>
+                      <li><strong>Is Bonus:</strong> "Yes" or "No" (optional, defaults to "No")</li>
+                      <li><strong>Time Limit (seconds):</strong> Number of seconds (optional, uses default time)</li>
+                    </ul>
+                  </div>
+                </div>
+                
                 <Button 
                   onClick={handleCreateQuiz}
                   disabled={createQuizMutation.isPending}
                   className="w-full sm:w-auto"
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Quiz
+                  {createQuizMutation.isPending ? "Creating..." : "Create Quiz"}
                 </Button>
               </div>
             </div>

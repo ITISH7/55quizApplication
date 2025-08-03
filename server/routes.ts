@@ -120,12 +120,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create quiz (Admin only)
   app.post("/api/quizzes", requireAuth, requireAdmin, upload.single('excelFile'), async (req: any, res) => {
     try {
-      const { title, passkey, defaultTimePerQuestion, scoringType } = req.body;
+      const { title, passkey, defaultTimePerQuestion, scoringType, questions } = req.body;
       
-      if (!req.file) {
-        return res.status(400).json({ error: "Excel file is required" });
-      }
-
       // Create quiz
       const quiz = await storage.createQuiz({
         title,
@@ -135,35 +131,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: req.user.id
       });
 
-      // Parse Excel file
-      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const data = XLSX.utils.sheet_to_json(worksheet);
+      // Handle manual questions or Excel file
+      if (questions) {
+        // Manual questions from form
+        const parsedQuestions = JSON.parse(questions);
+        for (let i = 0; i < parsedQuestions.length; i++) {
+          const q = parsedQuestions[i];
+          await storage.createQuestion({
+            quizId: quiz.id,
+            questionNumber: i + 1,
+            text: q.text,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            isBonus: q.isBonus || false,
+            timeLimit: q.timeLimit || parseInt(defaultTimePerQuestion) || 45
+          });
+        }
+      } else if (req.file) {
+        // Excel file upload
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const data = XLSX.utils.sheet_to_json(worksheet);
 
-      // Create questions
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i] as any;
-        await storage.createQuestion({
-          quizId: quiz.id,
-          questionNumber: i + 1,
-          text: row.Question || row.question,
-          options: [
-            row['Option A'] || row.optionA,
-            row['Option B'] || row.optionB,
-            row['Option C'] || row.optionC,
-            row['Option D'] || row.optionD
-          ],
-          correctAnswer: row['Correct Answer'] || row.correctAnswer,
-          isBonus: (row['Is Bonus'] || row.isBonus) === 'Yes' || (row['Is Bonus'] || row.isBonus) === true,
-          timeLimit: parseInt(row['Time Limit (seconds)'] || row.timeLimit) || defaultTimePerQuestion || 45
-        });
+        // Create questions from Excel
+        for (let i = 0; i < data.length; i++) {
+          const row = data[i] as any;
+          await storage.createQuestion({
+            quizId: quiz.id,
+            questionNumber: i + 1,
+            text: row.Question || row.question,
+            options: [
+              row['Option A'] || row.optionA,
+              row['Option B'] || row.optionB,
+              row['Option C'] || row.optionC,
+              row['Option D'] || row.optionD
+            ],
+            correctAnswer: row['Correct Answer'] || row.correctAnswer,
+            isBonus: (row['Is Bonus'] || row.isBonus) === 'Yes' || (row['Is Bonus'] || row.isBonus) === true,
+            timeLimit: parseInt(row['Time Limit (seconds)'] || row.timeLimit) || parseInt(defaultTimePerQuestion) || 45
+          });
+        }
+      } else {
+        return res.status(400).json({ error: "Either Excel file or manual questions are required" });
       }
 
       res.json({ quiz });
     } catch (error) {
       console.error('Quiz creation error:', error);
       res.status(500).json({ error: "Failed to create quiz" });
+    }
+  });
+
+  // Download sample Excel template
+  app.get("/api/quiz-template", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const sampleData = [
+        {
+          'Question': 'What is the capital of France?',
+          'Option A': 'London',
+          'Option B': 'Berlin', 
+          'Option C': 'Paris',
+          'Option D': 'Madrid',
+          'Correct Answer': 'Option C',
+          'Is Bonus': 'No',
+          'Time Limit (seconds)': 45
+        },
+        {
+          'Question': 'Which planet is known as the Red Planet?',
+          'Option A': 'Venus',
+          'Option B': 'Mars',
+          'Option C': 'Jupiter', 
+          'Option D': 'Saturn',
+          'Correct Answer': 'Option B',
+          'Is Bonus': 'No',
+          'Time Limit (seconds)': 30
+        },
+        {
+          'Question': 'BONUS: What is the chemical symbol for gold?',
+          'Option A': 'Go',
+          'Option B': 'Gd',
+          'Option C': 'Au',
+          'Option D': 'Ag',
+          'Correct Answer': 'Option C', 
+          'Is Bonus': 'Yes',
+          'Time Limit (seconds)': 60
+        }
+      ];
+
+      const worksheet = XLSX.utils.json_to_sheet(sampleData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Quiz Questions");
+      
+      const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+      
+      res.setHeader('Content-Disposition', 'attachment; filename="quiz-template.xlsx"');
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.send(buffer);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate template" });
     }
   });
 
