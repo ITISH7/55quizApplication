@@ -27,11 +27,6 @@ export default function UserDashboard() {
     }
   }, [user, setLocation]);
 
-  // Don't render anything if redirecting
-  if (!user || user.isAdmin) {
-    return null;
-  }
-
   const { data: quizzesData } = useQuery({
     queryKey: ["/api/quizzes"],
     queryFn: async () => {
@@ -40,8 +35,14 @@ export default function UserDashboard() {
       });
       if (!response.ok) throw new Error("Failed to fetch quizzes");
       return response.json();
-    }
+    },
+    enabled: !!user && !user.isAdmin // Only run query when we have a valid non-admin user
   });
+
+  // Don't render anything if redirecting
+  if (!user || user.isAdmin) {
+    return null;
+  }
 
   const joinQuizMutation = useMutation({
     mutationFn: async ({ quizId, passkey }: { quizId: string; passkey: string }) => {
