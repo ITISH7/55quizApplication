@@ -6,9 +6,9 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),
-  isAdmin: boolean("is_admin").default(false),
+  isAdmin: boolean("is_admin").default(false).notNull(),
   currentSessionId: varchar("current_session_id"),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const quizzes = pgTable("quizzes", {
@@ -16,10 +16,10 @@ export const quizzes = pgTable("quizzes", {
   title: text("title").notNull(),
   passkey: text("passkey").notNull(),
   status: text("status").notNull().default("draft"), // draft, active, completed
-  defaultTimePerQuestion: integer("default_time_per_question").default(45),
-  scoringType: text("scoring_type").default("speed"), // standard, speed, negative
+  defaultTimePerQuestion: integer("default_time_per_question").default(45).notNull(),
+  scoringType: text("scoring_type").default("speed").notNull(), // standard, speed, negative
   createdBy: varchar("created_by").references(() => users.id),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
   startedAt: timestamp("started_at"),
   completedAt: timestamp("completed_at"),
 });
@@ -31,9 +31,9 @@ export const questions = pgTable("questions", {
   text: text("text").notNull(),
   options: jsonb("options").notNull(), // ["A", "B", "C", "D"]
   correctAnswer: text("correct_answer").notNull(),
-  isBonus: boolean("is_bonus").default(false),
-  timeLimit: integer("time_limit").default(45),
-  isRevealed: boolean("is_revealed").default(false),
+  isBonus: boolean("is_bonus").default(false).notNull(),
+  timeLimit: integer("time_limit").default(45).notNull(),
+  isRevealed: boolean("is_revealed").default(false).notNull(),
   revealedAt: timestamp("revealed_at"),
 });
 
@@ -41,10 +41,10 @@ export const quizSessions = pgTable("quiz_sessions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   quizId: varchar("quiz_id").references(() => quizzes.id).notNull(),
   userId: varchar("user_id").references(() => users.id).notNull(),
-  joinedAt: timestamp("joined_at").defaultNow(),
-  totalScore: integer("total_score").default(0),
+  joinedAt: timestamp("joined_at").defaultNow().notNull(),
+  totalScore: integer("total_score").default(0).notNull(),
   currentQuestionNumber: integer("current_question_number").default(0),
-  isActive: boolean("is_active").default(true),
+  isActive: boolean("is_active").default(true).notNull(),
 });
 
 export const answers = pgTable("answers", {
@@ -52,10 +52,10 @@ export const answers = pgTable("answers", {
   sessionId: varchar("session_id").references(() => quizSessions.id).notNull(),
   questionId: varchar("question_id").references(() => questions.id).notNull(),
   selectedAnswer: text("selected_answer"), // null if skipped
-  isCorrect: boolean("is_correct").default(false),
-  points: integer("points").default(0),
+  isCorrect: boolean("is_correct").default(false).notNull(),
+  points: integer("points").default(0).notNull(),
   answerOrder: integer("answer_order"), // 1st, 2nd, 3rd correct answer
-  submittedAt: timestamp("submitted_at").defaultNow(),
+  submittedAt: timestamp("submitted_at").defaultNow().notNull(),
 });
 
 export const otpCodes = pgTable("otp_codes", {

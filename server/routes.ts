@@ -309,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update session score
       const currentAnswers = await storage.getSessionAnswers(sessionId);
-      const totalScore = currentAnswers.reduce((sum, a) => sum + a.points, 0) + points;
+      const totalScore = currentAnswers.reduce((sum, a) => sum + (a.points || 0), 0) + points;
       await storage.updateSessionScore(sessionId, totalScore);
 
       // Broadcast answer to quiz room
@@ -406,12 +406,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   function broadcastToQuiz(quizId: string, message: any) {
     const room = quizRooms.get(quizId);
     if (room) {
-      room.forEach(token => {
+      for (const token of room) {
         const ws = connections.get(token);
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify(message));
         }
-      });
+      }
     }
   }
 

@@ -1,6 +1,7 @@
 import { useLocation, useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +11,7 @@ export default function FinalResults() {
   const [, setLocation] = useLocation();
   const { id: quizId } = useParams<{ id: string }>();
   const { user, token } = useAuth();
+  const { toast } = useToast();
 
   // Redirect if not logged in
   if (!user) {
