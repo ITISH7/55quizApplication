@@ -71,6 +71,7 @@ export default function AdminDashboard() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/quizzes"] });
+      // Reset form
       setNewQuiz({
         title: "",
         passkey: "",
@@ -78,6 +79,16 @@ export default function AdminDashboard() {
         scoringType: "speed",
         excelFile: null
       });
+      // Reset manual questions
+      setManualQuestions([{
+        text: "",
+        options: ["", "", "", ""],
+        correctAnswer: "Option A",
+        isBonus: false,
+        timeLimit: 45
+      }]);
+      setShowManualQuiz(false);
+      
       toast({
         title: "Success",
         description: "Quiz created successfully"
@@ -116,7 +127,14 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (!newQuiz.excelFile && manualQuestions.every(q => !q.text)) {
+    // Filter out empty questions for validation
+    const validQuestions = manualQuestions.filter(q => 
+      q.text.trim() && 
+      q.options.every(opt => opt.trim()) &&
+      q.options.length === 4
+    );
+
+    if (!newQuiz.excelFile && validQuestions.length === 0) {
       toast({
         title: "Error", 
         description: "Please either upload an Excel file or add manual questions",
@@ -133,9 +151,8 @@ export default function AdminDashboard() {
     
     if (newQuiz.excelFile) {
       formData.append("excelFile", newQuiz.excelFile);
-    } else {
-      // Filter out empty questions
-      const validQuestions = manualQuestions.filter(q => q.text.trim() && q.options.every(opt => opt.trim()));
+    } else if (validQuestions.length > 0) {
+      // Send manual questions as JSON
       formData.append("questions", JSON.stringify(validQuestions));
     }
 
