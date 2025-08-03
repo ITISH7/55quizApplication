@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,11 +18,12 @@ export default function Login() {
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already logged in
-  if (user) {
-    setLocation(user.isAdmin ? "/admin" : "/dashboard");
-    return null;
-  }
+  // Redirect if already logged in using useEffect to avoid setState during render
+  useEffect(() => {
+    if (user) {
+      setLocation(user.isAdmin ? "/admin" : "/dashboard");
+    }
+  }, [user, setLocation]);
 
   const handleSendOtp = async () => {
     if (!email.endsWith("@fiftyfivetech.io")) {

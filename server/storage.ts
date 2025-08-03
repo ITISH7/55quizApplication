@@ -68,8 +68,9 @@ export class MemStorage implements IStorage {
   private otpCodes: Map<string, OtpCode> = new Map();
 
   constructor() {
-    // Create admin user
-    this.createUser({ email: "admin@fiftyfivetech.io", isAdmin: true });
+    // Create admin users
+    this.createUser({ email: "nishant.gandhi@fiftyfivetech.io", isAdmin: true });
+    this.createUser({ email: "itish.jain@fiftyfivetech.io", isAdmin: true });
   }
 
   async getUser(id: string): Promise<User | undefined> {
