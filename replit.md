@@ -1,6 +1,26 @@
 # Overview
 
-This is a real-time quiz application built with React frontend and Express.js backend. The system allows administrators to create and manage live quizzes, while users can join and participate in real-time quiz sessions. The application features OTP-based authentication for secure access restricted to company emails, real-time WebSocket communication for live quiz interactions, and comprehensive quiz management with leaderboards and scoring systems.
+Live Quiz Showdown is a comprehensive real-time quiz platform designed for corporate team events at FiftyFive Technologies. The system provides secure OTP-based authentication, dual question creation methods (manual and Excel upload), live quiz management with admin controls, real-time participant interaction via WebSocket, and persistent data storage using MongoDB Atlas.
+
+## Recent Updates (August 2025)
+
+### Completed Features
+- ✅ **Full MongoDB Integration**: Migrated from in-memory to persistent MongoDB Atlas storage
+- ✅ **Manual Question Creation**: Working question entry with proper database persistence  
+- ✅ **Excel Question Upload**: Complete Excel file processing and question extraction
+- ✅ **Live Quiz Controls**: Reveal, end, skip question functionality for admins
+- ✅ **Authentication System**: OTP-based login with @fiftyfivetech.io domain restriction
+- ✅ **Real-time Updates**: WebSocket integration for live quiz experience
+- ✅ **Admin Dashboard**: Complete quiz management interface
+- ✅ **User Dashboard**: Participant interface with quiz joining
+- ✅ **Comprehensive Documentation**: Full project documentation and deployment guides
+
+### Architecture Status
+- **Database**: MongoDB Atlas fully integrated and operational
+- **API Endpoints**: All CRUD operations working with proper authentication
+- **Real-time Features**: WebSocket communication established
+- **File Processing**: Excel upload and parsing functional
+- **Security**: Domain-restricted OTP authentication implemented
 
 # User Preferences
 
