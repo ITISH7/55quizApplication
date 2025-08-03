@@ -134,10 +134,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle manual questions or Excel file
       if (questions) {
         // Manual questions from form
+        console.log('Creating manual questions:', questions);
         const parsedQuestions = JSON.parse(questions);
+        console.log('Parsed questions:', parsedQuestions);
+        
         for (let i = 0; i < parsedQuestions.length; i++) {
           const q = parsedQuestions[i];
-          await storage.createQuestion({
+          console.log(`Creating question ${i + 1}:`, q);
+          
+          const newQuestion = await storage.createQuestion({
             quizId: quiz.id,
             questionNumber: i + 1,
             text: q.text,
@@ -146,6 +151,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isBonus: q.isBonus || false,
             timeLimit: q.timeLimit || parseInt(defaultTimePerQuestion) || 45
           });
+          console.log('Created question:', newQuestion);
         }
       } else if (req.file) {
         // Excel file upload
@@ -155,9 +161,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const data = XLSX.utils.sheet_to_json(worksheet);
 
         // Create questions from Excel
+        console.log('Creating Excel questions, data length:', data.length);
         for (let i = 0; i < data.length; i++) {
           const row = data[i] as any;
-          await storage.createQuestion({
+          const newQuestion = await storage.createQuestion({
             quizId: quiz.id,
             questionNumber: i + 1,
             text: row.Question || row.question,
@@ -171,6 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isBonus: (row['Is Bonus'] || row.isBonus) === 'Yes' || (row['Is Bonus'] || row.isBonus) === true,
             timeLimit: parseInt(row['Time Limit (seconds)'] || row.timeLimit) || parseInt(defaultTimePerQuestion) || 45
           });
+          console.log('Created question from Excel:', newQuestion);
         }
       } else {
         return res.status(400).json({ error: "Either Excel file or manual questions are required" });
