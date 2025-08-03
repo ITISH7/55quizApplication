@@ -81,9 +81,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get or create user
       let user = await storage.getUserByEmail(email);
       if (!user) {
+        // Check if this email should be an admin
+        const isAdmin = email === "nishant.gandhi@fiftyfivetech.io" || 
+                       email === "itish.jain@fiftyfivetech.io" ||
+                       email === "admin@fiftyfivetech.io";
+        
         user = await storage.createUser({ 
           email, 
-          isAdmin: email === "admin@fiftyfivetech.io" 
+          isAdmin 
         });
       }
 

@@ -288,6 +288,7 @@ export class MemStorage implements IStorage {
       ...answer,
       id,
       selectedAnswer: answer.selectedAnswer || null,
+      answerOrder: answer.answerOrder || null,
       submittedAt: new Date()
     };
     this.answers.set(id, newAnswer);

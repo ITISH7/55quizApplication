@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -18,14 +18,17 @@ export default function UserDashboard() {
   
   const [passkeys, setPasskeys] = useState<Record<string, string>>({});
 
-  // Redirect if not logged in or is admin
-  if (!user) {
-    setLocation("/login");
-    return null;
-  }
+  // Redirect if not logged in or is admin using useEffect
+  useEffect(() => {
+    if (!user) {
+      setLocation("/login");
+    } else if (user.isAdmin) {
+      setLocation("/admin");
+    }
+  }, [user, setLocation]);
 
-  if (user.isAdmin) {
-    setLocation("/admin");
+  // Don't render anything if redirecting
+  if (!user || user.isAdmin) {
     return null;
   }
 
