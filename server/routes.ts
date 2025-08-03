@@ -298,7 +298,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ message: "Question revealed" });
     } catch (error) {
+      console.error('Error revealing question:', error);
       res.status(500).json({ error: "Failed to reveal question" });
+    }
+  });
+
+  // End current question (Admin only)
+  app.post("/api/quizzes/:quizId/questions/:questionId/end", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      // Broadcast question end to all participants
+      broadcastToQuiz(req.params.quizId, {
+        type: "question_ended",
+        questionId: req.params.questionId
+      });
+
+      res.json({ message: "Question ended" });
+    } catch (error) {
+      console.error('Error ending question:', error);
+      res.status(500).json({ error: "Failed to end question" });
+    }
+  });
+
+  // Skip to next question (Admin only)
+  app.post("/api/quizzes/:quizId/skip", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { questionIndex } = req.body;
+      
+      // Broadcast skip to next question
+      broadcastToQuiz(req.params.quizId, {
+        type: "question_skipped",
+        nextQuestionIndex: questionIndex
+      });
+
+      res.json({ message: "Question skipped" });
+    } catch (error) {
+      console.error('Error skipping question:', error);
+      res.status(500).json({ error: "Failed to skip question" });
+    }
+  });
+
+  // End quiz (Admin only)
+  app.post("/api/quizzes/:id/end", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      await storage.updateQuizStatus(req.params.id, "completed", new Date());
+      
+      // Broadcast quiz end to all connected clients
+      broadcastToQuiz(req.params.id, {
+        type: "quiz_ended",
+        quizId: req.params.id
+      });
+
+      res.json({ message: "Quiz ended" });
+    } catch (error) {
+      console.error('Error ending quiz:', error);
+      res.status(500).json({ error: "Failed to end quiz" });
     }
   });
 

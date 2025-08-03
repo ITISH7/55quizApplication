@@ -93,6 +93,50 @@ export default function QuizControl() {
     }
   });
 
+  const endQuestionMutation = useMutation({
+    mutationFn: async (questionId: string) => {
+      const response = await apiRequest("POST", `/api/quizzes/${quizId}/questions/${questionId}/end`);
+      return response.json();
+    },
+    onSuccess: () => {
+      setIsTimerRunning(false);
+      toast({
+        title: "Success",
+        description: "Question ended"
+      });
+    }
+  });
+
+  const skipQuestionMutation = useMutation({
+    mutationFn: async (nextIndex: number) => {
+      const response = await apiRequest("POST", `/api/quizzes/${quizId}/skip`, {
+        questionIndex: nextIndex
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      handleNextQuestion();
+      toast({
+        title: "Success",
+        description: "Skipped to next question"
+      });
+    }
+  });
+
+  const endQuizMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", `/api/quizzes/${quizId}/end`);
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Quiz ended successfully"
+      });
+      setLocation("/admin");
+    }
+  });
+
   const quiz = quizData?.quiz;
   const questions = quiz?.questions || [];
   const currentQuestion = questions[currentQuestionIndex];
@@ -102,6 +146,20 @@ export default function QuizControl() {
   const handleRevealQuestion = () => {
     if (currentQuestion) {
       revealQuestionMutation.mutate(currentQuestion.id);
+      setIsTimerRunning(true);
+    }
+  };
+
+  const handleEndQuestion = () => {
+    if (currentQuestion) {
+      endQuestionMutation.mutate(currentQuestion.id);
+    }
+  };
+
+  const handleSkipQuestion = () => {
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex < questions.length) {
+      skipQuestionMutation.mutate(nextIndex);
     }
   };
 
@@ -122,6 +180,10 @@ export default function QuizControl() {
     setTimeout(() => {
       handleNextQuestion();
     }, 2000);
+  };
+
+  const handleEndQuiz = () => {
+    endQuizMutation.mutate();
   };
 
   if (!quiz) return <div>Loading...</div>;
@@ -154,7 +216,11 @@ export default function QuizControl() {
                 <p className="text-sm text-gray-500">Participants</p>
                 <p className="text-xl font-bold text-primary-600">{activeParticipants}</p>
               </div>
-              <Button variant="destructive">
+              <Button 
+                variant="destructive"
+                onClick={handleEndQuiz}
+                disabled={endQuizMutation.isPending}
+              >
                 <X className="h-4 w-4 mr-2" />
                 End Quiz
               </Button>
@@ -236,7 +302,7 @@ export default function QuizControl() {
                     </div>
 
                     {/* Question Controls */}
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 flex-wrap">
                       <Button 
                         onClick={handleRevealQuestion}
                         disabled={revealQuestionMutation.isPending || currentQuestion.isRevealed}
@@ -245,28 +311,28 @@ export default function QuizControl() {
                         {currentQuestion.isRevealed ? "Question Revealed" : "Reveal Question"}
                       </Button>
                       
-                      {currentQuestion.isRevealed && (
-                        <Button 
-                          onClick={handleStartTimer}
-                          disabled={isTimerRunning}
-                          variant="outline"
-                        >
-                          <Play className="mr-2 h-4 w-4" />
-                          Start Timer
-                        </Button>
-                      )}
-                      
                       <Button 
-                        onClick={() => setCurrentQuestionIndex(Math.min(currentQuestionIndex + 1, questions.length - 1))}
-                        variant="outline"
+                        variant="secondary"
+                        onClick={handleEndQuestion}
+                        disabled={endQuestionMutation.isPending || !currentQuestion.isRevealed}
                       >
-                        <SkipForward className="mr-2 h-4 w-4" />
-                        Skip
+                        <X className="mr-2 h-4 w-4" />
+                        End Question
                       </Button>
                       
                       <Button 
+                        variant="outline"
+                        onClick={handleSkipQuestion}
+                        disabled={skipQuestionMutation.isPending || currentQuestionIndex >= questions.length - 1}
+                      >
+                        <SkipForward className="mr-2 h-4 w-4" />
+                        Skip Question
+                      </Button>
+
+                      <Button 
                         onClick={handleNextQuestion}
                         disabled={currentQuestionIndex >= questions.length - 1}
+                        variant="outline"
                       >
                         <ArrowRight className="mr-2 h-4 w-4" />
                         Next Question
