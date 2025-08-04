@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   isAdmin: { type: Boolean, default: false },
+  currentSessionId: { type: String, required: false },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -30,6 +31,8 @@ const quizSchema = new mongoose.Schema({
   scoringType: { type: String, enum: ['standard', 'speed', 'negative'], default: 'speed' },
   createdBy: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
+  startedAt: { type: Date, required: false },
+  completedAt: { type: Date, required: false },
   currentQuestionIndex: { type: Number, default: 0 }
 });
 
@@ -42,7 +45,9 @@ const questionSchema = new mongoose.Schema({
   options: [{ type: String, required: true }],
   correctAnswer: { type: String, required: true },
   isBonus: { type: Boolean, default: false },
-  timeLimit: { type: Number, default: 45 }
+  timeLimit: { type: Number, default: 45 },
+  isRevealed: { type: Boolean, default: false },
+  revealedAt: { type: Date, required: false }
 });
 
 // Quiz Session Schema
@@ -50,8 +55,10 @@ const quizSessionSchema = new mongoose.Schema({
   _id: { type: String, required: true },
   quizId: { type: String, required: true },
   userId: { type: String, required: true },
-  joinedAt: { type: Date, default: Date.now },
-  isActive: { type: Boolean, default: true }
+  score: { type: Number, default: 0 },
+  currentQuestionNumber: { type: Number, default: 0 },
+  isActive: { type: Boolean, default: true },
+  joinedAt: { type: Date, default: Date.now }
 });
 
 // Answer Schema
