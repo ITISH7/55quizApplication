@@ -57,13 +57,12 @@ const quizSessionSchema = new mongoose.Schema({
 // Answer Schema
 const answerSchema = new mongoose.Schema({
   _id: { type: String, required: true },
-  quizId: { type: String, required: true },
+  sessionId: { type: String, required: true },
   questionId: { type: String, required: true },
-  userId: { type: String, required: true },
-  selectedAnswer: { type: String, required: true },
+  selectedAnswer: { type: String, required: false },
   isCorrect: { type: Boolean, required: true },
-  timeToAnswer: { type: Number, required: true },
-  points: { type: Number, required: true },
+  points: { type: Number, default: 0 },
+  answerOrder: { type: Number, required: false },
   submittedAt: { type: Date, default: Date.now }
 });
 

@@ -286,6 +286,10 @@ export class MongoStorage implements IStorage {
     const id = randomUUID();
     const newSession = await QuizSessionModel.create({
       _id: id,
+      score: 0,
+      currentQuestionNumber: 0,
+      isActive: true,
+      joinedAt: new Date(),
       ...session
     });
     return this.mongoToQuizSession(newSession);
@@ -365,10 +369,15 @@ export class MongoStorage implements IStorage {
     for (const session of sessions) {
       const user = await UserModel.findById(session.userId);
       if (user) {
+        const answers = await AnswerModel.find({ sessionId: session._id });
+        const correctAnswers = answers.filter(a => a.isCorrect).length;
+        
         leaderboard.push({
           userId: session.userId,
           email: user.email,
           totalScore: session.score,
+          correctAnswers,
+          totalAnswers: answers.length,
           rank: leaderboard.length + 1
         });
       }

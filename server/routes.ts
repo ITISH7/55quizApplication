@@ -386,6 +386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ session });
     } catch (error) {
+      console.error('Join quiz error:', error);
       res.status(500).json({ error: "Failed to join quiz" });
     }
   });
@@ -526,24 +527,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       connections.delete(token);
       
       // Remove from quiz rooms
-      for (const [roomId, users] of quizRooms.entries()) {
+      quizRooms.forEach((users, roomId) => {
         users.delete(token);
         if (users.size === 0) {
           quizRooms.delete(roomId);
         }
-      }
+      });
     });
   });
 
   function broadcastToQuiz(quizId: string, message: any) {
     const room = quizRooms.get(quizId);
     if (room) {
-      for (const token of room) {
+      room.forEach((token) => {
         const ws = connections.get(token);
         if (ws && ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify(message));
         }
-      }
+      });
     }
   }
 
