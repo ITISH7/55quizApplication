@@ -423,6 +423,7 @@ export class MongoStorage implements IStorage {
       correctAnswer: doc.correctAnswer,
       isBonus: doc.isBonus,
       timeLimit: doc.timeLimit,
+      points: doc.points || 10,
       isRevealed: doc.isRevealed,
       revealedAt: doc.revealedAt || null
     };

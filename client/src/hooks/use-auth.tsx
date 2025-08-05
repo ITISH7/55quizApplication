@@ -30,7 +30,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedToken) {
       setToken(storedToken);
       // Verify token with server
-      apiRequest('GET', '/api/auth/me')
+      fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${storedToken}` }
+      })
         .then(res => res.json())
         .then(data => {
           setUser(data.user);
