@@ -36,7 +36,8 @@ export default function AdminDashboard() {
       options: ["", "", "", ""],
       correctAnswer: "Option A",
       isBonus: false,
-      timeLimit: 45
+      timeLimit: 45,
+      points: 10
     }
   ]);
 
@@ -135,7 +136,8 @@ export default function AdminDashboard() {
         options: ["", "", "", ""],
         correctAnswer: "Option A",
         isBonus: false,
-        timeLimit: 45
+        timeLimit: 45,
+        points: 10
       }]);
       setShowManualQuiz(false);
       
@@ -232,7 +234,8 @@ export default function AdminDashboard() {
       options: ["", "", "", ""],
       correctAnswer: "Option A", 
       isBonus: false,
-      timeLimit: 45
+      timeLimit: 45,
+      points: 10
     }]);
   };
 
@@ -474,7 +477,7 @@ export default function AdminDashboard() {
                                   ))}
                                 </div>
                                 
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-4 gap-4">
                                   <div>
                                     <Label>Correct Answer</Label>
                                     <Select
@@ -500,6 +503,18 @@ export default function AdminDashboard() {
                                       value={question.timeLimit}
                                       onChange={(e) => updateQuestion(index, 'timeLimit', parseInt(e.target.value) || 45)}
                                       className="mt-2"
+                                    />
+                                  </div>
+                                  
+                                  <div>
+                                    <Label>Points</Label>
+                                    <Input
+                                      type="number"
+                                      value={question.points}
+                                      onChange={(e) => updateQuestion(index, 'points', parseInt(e.target.value) || 10)}
+                                      className="mt-2"
+                                      min="1"
+                                      max="100"
                                     />
                                   </div>
                                   
@@ -609,6 +624,7 @@ export default function AdminDashboard() {
                       <li><strong>Question:</strong> The question text</li>
                       <li><strong>Option A, Option B, Option C, Option D:</strong> Multiple choice options</li>
                       <li><strong>Correct Answer:</strong> Must be "Option A", "Option B", "Option C", or "Option D"</li>
+                      <li><strong>Points:</strong> Number of points (optional, defaults to 10)</li>
                       <li><strong>Is Bonus:</strong> "Yes" or "No" (optional, defaults to "No")</li>
                       <li><strong>Time Limit (seconds):</strong> Number of seconds (optional, uses default time)</li>
                     </ul>

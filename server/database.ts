@@ -46,6 +46,7 @@ const questionSchema = new mongoose.Schema({
   correctAnswer: { type: String, required: true },
   isBonus: { type: Boolean, default: false },
   timeLimit: { type: Number, default: 45 },
+  points: { type: Number, default: 10 },
   isRevealed: { type: Boolean, default: false },
   revealedAt: { type: Date, required: false }
 });

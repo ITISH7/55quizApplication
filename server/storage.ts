@@ -199,6 +199,7 @@ export class MemStorage implements IStorage {
       id,
       isBonus: question.isBonus || false,
       timeLimit: question.timeLimit || 45,
+      points: question.points || 10,
       isRevealed: false,
       revealedAt: null
     };

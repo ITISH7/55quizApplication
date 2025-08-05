@@ -33,6 +33,7 @@ export const questions = pgTable("questions", {
   correctAnswer: text("correct_answer").notNull(),
   isBonus: boolean("is_bonus").default(false).notNull(),
   timeLimit: integer("time_limit").default(45).notNull(),
+  points: integer("points").default(10).notNull(),
   isRevealed: boolean("is_revealed").default(false).notNull(),
   revealedAt: timestamp("revealed_at"),
 });
@@ -88,6 +89,7 @@ export const insertQuestionSchema = createInsertSchema(questions).pick({
   correctAnswer: true,
   isBonus: true,
   timeLimit: true,
+  points: true,
 });
 
 export const insertQuizSessionSchema = createInsertSchema(quizSessions).pick({

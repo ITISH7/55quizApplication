@@ -149,7 +149,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             options: q.options,
             correctAnswer: q.correctAnswer,
             isBonus: q.isBonus || false,
-            timeLimit: q.timeLimit || parseInt(defaultTimePerQuestion) || 45
+            timeLimit: q.timeLimit || parseInt(defaultTimePerQuestion) || 45,
+            points: q.points || 10
           });
           console.log('Created question:', newQuestion);
         }
@@ -176,7 +177,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ],
             correctAnswer: row['Correct Answer'] || row.correctAnswer,
             isBonus: (row['Is Bonus'] || row.isBonus) === 'Yes' || (row['Is Bonus'] || row.isBonus) === true,
-            timeLimit: parseInt(row['Time Limit (seconds)'] || row.timeLimit) || parseInt(defaultTimePerQuestion) || 45
+            timeLimit: parseInt(row['Time Limit (seconds)'] || row.timeLimit) || parseInt(defaultTimePerQuestion) || 45,
+            points: parseInt(row['Points'] || row.points) || 10
           });
           console.log('Created question from Excel:', newQuestion);
         }
@@ -202,6 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Option C': 'Paris',
           'Option D': 'Madrid',
           'Correct Answer': 'Option C',
+          'Points': 10,
           'Is Bonus': 'No',
           'Time Limit (seconds)': 45
         },
@@ -212,6 +215,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Option C': 'Jupiter', 
           'Option D': 'Saturn',
           'Correct Answer': 'Option B',
+          'Points': 15,
           'Is Bonus': 'No',
           'Time Limit (seconds)': 30
         },
@@ -221,7 +225,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           'Option B': 'Gd',
           'Option C': 'Au',
           'Option D': 'Ag',
-          'Correct Answer': 'Option C', 
+          'Correct Answer': 'Option C',
+          'Points': 20,
           'Is Bonus': 'Yes',
           'Time Limit (seconds)': 60
         }
