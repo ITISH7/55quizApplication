@@ -155,7 +155,17 @@ export default function AdminDashboard() {
 
   const startQuizMutation = useMutation({
     mutationFn: async (quizId: string) => {
-      const response = await apiRequest("POST", `/api/quizzes/${quizId}/start`);
+      const response = await fetch(`/api/quizzes/${quizId}/start`, {
+        method: "POST",
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to start quiz");
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -163,6 +173,13 @@ export default function AdminDashboard() {
       toast({
         title: "Success",
         description: "Quiz started successfully"
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
       });
     }
   });
