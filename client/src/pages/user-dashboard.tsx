@@ -50,12 +50,22 @@ export default function UserDashboard() {
       return response.json();
     },
     onSuccess: (data, variables) => {
-      setLocation(`/quiz/${variables.quizId}`);
+      toast({
+        title: "Success!",
+        description: "Joined quiz successfully. Redirecting...",
+        variant: "default"
+      });
+      // Small delay to show success message
+      setTimeout(() => {
+        setLocation(`/quiz/${variables.quizId}`);
+      }, 1000);
     },
     onError: (error: any) => {
+      console.log('Join quiz error:', error);
+      const errorMessage = error.message || error.error || "Failed to join quiz";
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Unable to Join Quiz",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -153,8 +163,9 @@ export default function UserDashboard() {
                       <Button 
                         onClick={() => handleJoinQuiz(quiz.id)}
                         disabled={joinQuizMutation.isPending}
+                        className="min-w-[100px]"
                       >
-                        Join Quiz
+                        {joinQuizMutation.isPending ? "Joining..." : "Join Quiz"}
                       </Button>
                     </div>
                   </CardContent>
