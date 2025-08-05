@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Brain, Plus, Upload, Play, Edit, Trash, BarChart3, LogOut, FileText, Users, Clock, Activity, Download, HelpCircle } from "lucide-react";
+import { Leaderboard } from "@/components/leaderboard";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -38,6 +39,55 @@ export default function AdminDashboard() {
       timeLimit: 45
     }
   ]);
+
+  // Sample leaderboard data for demonstration
+  const sampleLeaderboardData = [
+    {
+      userId: "user-1",
+      email: "nishant.gandhi@fiftyfivetech.io",
+      totalScore: 850,
+      correctAnswers: 8,
+      totalAnswers: 10,
+      rank: 1,
+      totalTime: "2:30"
+    },
+    {
+      userId: "user-2", 
+      email: "itish.jain@fiftyfivetech.io",
+      totalScore: 720,
+      correctAnswers: 7,
+      totalAnswers: 10,
+      rank: 2,
+      totalTime: "3:15"
+    },
+    {
+      userId: "user-3",
+      email: "rahul.sharma@fiftyfivetech.io", 
+      totalScore: 650,
+      correctAnswers: 6,
+      totalAnswers: 10,
+      rank: 3,
+      totalTime: "2:45"
+    },
+    {
+      userId: "user-4",
+      email: "priya.patel@fiftyfivetech.io",
+      totalScore: 580,
+      correctAnswers: 6,
+      totalAnswers: 10,
+      rank: 4,
+      totalTime: "4:10"
+    },
+    {
+      userId: "user-5", 
+      email: "ankit.singh@fiftyfivetech.io",
+      totalScore: 450,
+      correctAnswers: 5,
+      totalAnswers: 10,
+      rank: 5,
+      totalTime: "3:50"
+    }
+  ];
 
   // Redirect if not admin
   if (!user?.isAdmin) {
@@ -290,6 +340,30 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Live Leaderboard Panel */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <BarChart3 className="text-primary-600 mr-2 h-5 w-5" />
+              Live Leaderboard Preview
+            </h2>
+            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+              Sample Data
+            </Badge>
+          </div>
+          <Leaderboard 
+            leaderboard={sampleLeaderboardData}
+            showExport={true}
+            onExport={() => {
+              toast({
+                title: "Export Started",
+                description: "Leaderboard data will be downloaded as CSV file."
+              });
+            }}
+            maxEntries={5}
+          />
         </div>
 
         {/* Create New Quiz Section */}
