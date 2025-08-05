@@ -285,14 +285,17 @@ export class MongoStorage implements IStorage {
   async createQuizSession(session: InsertQuizSession): Promise<QuizSession> {
     await this.ensureConnection();
     const id = randomUUID();
-    const newSession = await QuizSessionModel.create({
+    // Explicitly set all required fields to avoid validation errors
+    const sessionData = {
       _id: id,
+      userId: session.userId,
+      quizId: session.quizId,
       score: 0,
       currentQuestionNumber: 0,
       isActive: true,
-      joinedAt: new Date(),
-      ...session
-    });
+      joinedAt: new Date()
+    };
+    const newSession = await QuizSessionModel.create(sessionData);
     return this.mongoToQuizSession(newSession);
   }
 
