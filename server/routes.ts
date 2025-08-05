@@ -120,7 +120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create quiz (Admin only)
   app.post("/api/quizzes", requireAuth, requireAdmin, upload.single('excelFile'), async (req: any, res) => {
     try {
-      const { title, passkey, defaultTimePerQuestion, scoringType, questions } = req.body;
+      const { title, passkey, defaultTimePerQuestion, scoringType, questions, speedScoringConfig } = req.body;
       
       // Create quiz
       const quiz = await storage.createQuiz({
@@ -128,6 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passkey,
         defaultTimePerQuestion: parseInt(defaultTimePerQuestion) || 45,
         scoringType: scoringType || "speed",
+        speedScoringConfig: speedScoringConfig ? JSON.parse(speedScoringConfig) : null,
         createdBy: req.user.id
       });
 
@@ -399,7 +400,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Submit answer
   app.post("/api/answers", requireAuth, async (req: any, res) => {
     try {
-      const { sessionId, questionId, selectedAnswer } = req.body;
+      const { sessionId, questionId, selectedAnswer, answerTime } = req.body;
 
       const session = await storage.getQuizSession(sessionId);
       if (!session || session.userId !== req.user.id) {
@@ -422,13 +423,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Calculate points based on scoring type
         const quiz = await storage.getQuiz(session.quizId);
-        if (quiz?.scoringType === "speed") {
+        if (quiz?.scoringType === "speed" && quiz.speedScoringConfig && answerTime) {
+          // Time-based scoring with custom configuration
+          const timeThresholds = quiz.speedScoringConfig.timeThresholds || quiz.speedScoringConfig;
+          points = 0; // Default
+          
+          for (const threshold of timeThresholds) {
+            if (answerTime <= threshold.maxTime) {
+              points = threshold.points;
+              break;
+            }
+          }
+        } else if (quiz?.scoringType === "speed") {
+          // Fallback to position-based scoring
           if (answerOrder === 1) points = 15;
           else if (answerOrder === 2) points = 10;
           else if (answerOrder === 3) points = 5;
           else points = 3;
         } else {
-          points = 10;
+          points = question.points || 10;
         }
 
         if (question.isBonus) {

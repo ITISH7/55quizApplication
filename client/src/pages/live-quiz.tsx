@@ -23,6 +23,8 @@ export default function LiveQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [userSession, setUserSession] = useState<any>(null);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
 
   // Redirect if not logged in
   if (!user) {
@@ -64,6 +66,8 @@ export default function LiveQuiz() {
         setCurrentQuestion(lastMessage.question);
         setSelectedAnswer("");
         setIsAnswerSubmitted(false);
+        setQuestionStartTime(Date.now());
+        setTimeRemaining(lastMessage.question?.timeLimit || 45);
       } else if (lastMessage.type === "answer_submitted") {
         refetchLeaderboard();
       }
@@ -76,10 +80,12 @@ export default function LiveQuiz() {
       questionId: string; 
       selectedAnswer: string | null 
     }) => {
+      const answerTime = (Date.now() - questionStartTime) / 1000; // Time in seconds
       const response = await apiRequest("POST", "/api/answers", {
         sessionId,
         questionId,
-        selectedAnswer
+        selectedAnswer,
+        answerTime
       });
       return response.json();
     },
@@ -150,7 +156,6 @@ export default function LiveQuiz() {
 
   const currentQuestionNumber = currentQuestion.questionNumber || 1;
   const totalQuestions = quiz.questions?.length || 10;
-  const timeRemaining = currentQuestion.timeLimit || 45;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">

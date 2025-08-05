@@ -16,11 +16,15 @@ Live Quiz Showdown is a comprehensive real-time quiz platform designed for corpo
 - ✅ **Admin Quiz Start**: Fixed authentication token issues, now working perfectly
 - ✅ **Live Leaderboard Panel**: Added visual leaderboard with sample data in admin dashboard
 - ✅ **Comprehensive Documentation**: Full project documentation and deployment guides
+- ✅ **Dynamic Time-Based Scoring**: Admins can configure custom point brackets based on answer speed
+- ✅ **Enhanced Quiz Configuration**: Speed scoring with customizable time thresholds and point awards
 
 ### Latest Fixes (August 5, 2025)
 - ✅ **Authentication Token Fix**: Resolved 401 errors in admin start quiz functionality
 - ✅ **MongoDB Schema Updates**: Added missing fields (score, currentQuestionNumber, startedAt, etc.)
 - ✅ **Leaderboard Integration**: Added live leaderboard panel with trophy/medal rankings
+- ✅ **User Join Quiz Fix**: Fixed 401 authentication errors for candidates joining quizzes
+- ✅ **Time-Based Scoring System**: Implemented configurable time-based points allocation for speed quizzes
 
 ### Architecture Status
 - **Database**: MongoDB Atlas fully integrated and operational

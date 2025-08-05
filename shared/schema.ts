@@ -18,6 +18,7 @@ export const quizzes = pgTable("quizzes", {
   status: text("status").notNull().default("draft"), // draft, active, completed
   defaultTimePerQuestion: integer("default_time_per_question").default(45).notNull(),
   scoringType: text("scoring_type").default("speed").notNull(), // standard, speed, negative
+  speedScoringConfig: jsonb("speed_scoring_config"), // { timeThresholds: [{ maxTime: 10, points: 20 }, { maxTime: 20, points: 15 }] }
   createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   startedAt: timestamp("started_at"),
@@ -79,6 +80,7 @@ export const insertQuizSchema = createInsertSchema(quizzes).pick({
   passkey: true,
   defaultTimePerQuestion: true,
   scoringType: true,
+  speedScoringConfig: true,
 });
 
 export const insertQuestionSchema = createInsertSchema(questions).pick({

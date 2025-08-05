@@ -26,6 +26,12 @@ export default function AdminDashboard() {
     passkey: "",
     defaultTimePerQuestion: "45",
     scoringType: "speed",
+    speedScoringConfig: [
+      { maxTime: 10, points: 20 },
+      { maxTime: 20, points: 15 },
+      { maxTime: 30, points: 10 },
+      { maxTime: 999, points: 5 }
+    ],
     excelFile: null as File | null
   });
 
@@ -128,6 +134,12 @@ export default function AdminDashboard() {
         passkey: "",
         defaultTimePerQuestion: "45",
         scoringType: "speed",
+        speedScoringConfig: [
+          { maxTime: 10, points: 20 },
+          { maxTime: 20, points: 15 },
+          { maxTime: 30, points: 10 },
+          { maxTime: 999, points: 5 }
+        ],
         excelFile: null
       });
       // Reset manual questions
@@ -217,6 +229,9 @@ export default function AdminDashboard() {
     formData.append("passkey", newQuiz.passkey);
     formData.append("defaultTimePerQuestion", newQuiz.defaultTimePerQuestion);
     formData.append("scoringType", newQuiz.scoringType);
+    if (newQuiz.scoringType === 'speed') {
+      formData.append('speedScoringConfig', JSON.stringify(newQuiz.speedScoringConfig));
+    }
     
     if (newQuiz.excelFile) {
       formData.append("excelFile", newQuiz.excelFile);
@@ -606,11 +621,79 @@ export default function AdminDashboard() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="standard">Standard (10 points)</SelectItem>
-                    <SelectItem value="speed">Speed-based (15/10/5 for 1st/2nd/3rd)</SelectItem>
+                    <SelectItem value="speed">Speed-based (Time-based Points)</SelectItem>
                     <SelectItem value="negative">With Negative Marking</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              
+              {/* Speed Scoring Configuration */}
+              {newQuiz.scoringType === "speed" && (
+                <div className="lg:col-span-2">
+                  <Label>Time-Based Scoring Configuration</Label>
+                  <div className="mt-2 space-y-3 p-4 border border-gray-200 rounded-lg bg-blue-50">
+                    <p className="text-sm text-gray-600 mb-3">Configure points based on answer time</p>
+                    {newQuiz.speedScoringConfig.map((config, index) => (
+                      <div key={index} className="flex items-center space-x-3">
+                        <div className="flex-1">
+                          <Label className="text-xs">Answer within</Label>
+                          <Input
+                            type="number"
+                            value={config.maxTime === 999 ? "" : config.maxTime}
+                            onChange={(e) => {
+                              const newConfig = [...newQuiz.speedScoringConfig];
+                              newConfig[index].maxTime = e.target.value ? parseInt(e.target.value) : 999;
+                              setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                            }}
+                            placeholder={config.maxTime === 999 ? "Any time" : "Seconds"}
+                            className="mt-1"
+                            disabled={config.maxTime === 999}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <Label className="text-xs">Points awarded</Label>
+                          <Input
+                            type="number"
+                            value={config.points}
+                            onChange={(e) => {
+                              const newConfig = [...newQuiz.speedScoringConfig];
+                              newConfig[index].points = parseInt(e.target.value) || 0;
+                              setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                            }}
+                            className="mt-1"
+                          />
+                        </div>
+                        {index < newQuiz.speedScoringConfig.length - 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newConfig = newQuiz.speedScoringConfig.filter((_, i) => i !== index);
+                              setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                            }}
+                          >
+                            ✕
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newConfig = [...newQuiz.speedScoringConfig];
+                        const lastTime = newConfig[newConfig.length - 2]?.maxTime || 0;
+                        newConfig.splice(-1, 0, { maxTime: lastTime + 10, points: 5 });
+                        setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                      }}
+                    >
+                      + Add Time Tier
+                    </Button>
+                  </div>
+                </div>
+              )}
               
               <div className="lg:col-span-2">
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
