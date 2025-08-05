@@ -423,23 +423,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Calculate points based on scoring type
         const quiz = await storage.getQuiz(session.quizId);
-        if (quiz?.scoringType === "speed" && quiz.speedScoringConfig && answerTime) {
-          // Time-based scoring with custom configuration
-          const timeThresholds = quiz.speedScoringConfig.timeThresholds || quiz.speedScoringConfig;
-          points = 0; // Default
+        if (quiz?.scoringType === "speed" && quiz.speedScoringConfig) {
+          // Position-based scoring with custom configuration
+          const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : quiz.speedScoringConfig.timeThresholds || [];
           
-          for (const threshold of timeThresholds) {
-            if (answerTime <= threshold.maxTime) {
-              points = threshold.points;
-              break;
-            }
+          if (speedConfig.length > 0 && answerOrder <= speedConfig.length) {
+            // Use custom points for this position (1st, 2nd, 3rd, etc.)
+            points = speedConfig[answerOrder - 1]?.points || speedConfig[speedConfig.length - 1]?.points || 5;
+          } else {
+            // Default position-based scoring
+            if (answerOrder === 1) points = 20;
+            else if (answerOrder === 2) points = 15;
+            else if (answerOrder === 3) points = 10;
+            else points = 5;
           }
         } else if (quiz?.scoringType === "speed") {
-          // Fallback to position-based scoring
-          if (answerOrder === 1) points = 15;
-          else if (answerOrder === 2) points = 10;
-          else if (answerOrder === 3) points = 5;
-          else points = 3;
+          // Standard position-based scoring
+          if (answerOrder === 1) points = 20;
+          else if (answerOrder === 2) points = 15;
+          else if (answerOrder === 3) points = 10;
+          else points = 5;
         } else {
           points = question.points || 10;
         }

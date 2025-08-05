@@ -27,10 +27,10 @@ export default function AdminDashboard() {
     defaultTimePerQuestion: "45",
     scoringType: "speed",
     speedScoringConfig: [
-      { maxTime: 10, points: 20 },
-      { maxTime: 20, points: 15 },
-      { maxTime: 30, points: 10 },
-      { maxTime: 999, points: 5 }
+      { maxTime: 0, points: 20 }, // 1st place
+      { maxTime: 0, points: 15 }, // 2nd place  
+      { maxTime: 0, points: 10 }, // 3rd place
+      { maxTime: 0, points: 5 }   // All others
     ],
     excelFile: null as File | null
   });
@@ -135,10 +135,10 @@ export default function AdminDashboard() {
         defaultTimePerQuestion: "45",
         scoringType: "speed",
         speedScoringConfig: [
-          { maxTime: 10, points: 20 },
-          { maxTime: 20, points: 15 },
-          { maxTime: 30, points: 10 },
-          { maxTime: 999, points: 5 }
+          { maxTime: 0, points: 20 }, // 1st place
+          { maxTime: 0, points: 15 }, // 2nd place  
+          { maxTime: 0, points: 10 }, // 3rd place
+          { maxTime: 0, points: 5 }   // All others
         ],
         excelFile: null
       });
@@ -621,7 +621,7 @@ export default function AdminDashboard() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="standard">Standard (10 points)</SelectItem>
-                    <SelectItem value="speed">Speed-based (Time-based Points)</SelectItem>
+                    <SelectItem value="speed">Speed-based (Position-based Points)</SelectItem>
                     <SelectItem value="negative">With Negative Marking</SelectItem>
                   </SelectContent>
                 </Select>
@@ -630,25 +630,20 @@ export default function AdminDashboard() {
               {/* Speed Scoring Configuration */}
               {newQuiz.scoringType === "speed" && (
                 <div className="lg:col-span-2">
-                  <Label>Time-Based Scoring Configuration</Label>
+                  <Label>Position-Based Scoring Configuration</Label>
                   <div className="mt-2 space-y-3 p-4 border border-gray-200 rounded-lg bg-blue-50">
-                    <p className="text-sm text-gray-600 mb-3">Configure points based on answer time</p>
+                    <p className="text-sm text-gray-600 mb-3">Configure points based on answer position (1st, 2nd, 3rd, etc.)</p>
                     {newQuiz.speedScoringConfig.map((config, index) => (
                       <div key={index} className="flex items-center space-x-3">
                         <div className="flex-1">
-                          <Label className="text-xs">Answer within</Label>
-                          <Input
-                            type="number"
-                            value={config.maxTime === 999 ? "" : config.maxTime}
-                            onChange={(e) => {
-                              const newConfig = [...newQuiz.speedScoringConfig];
-                              newConfig[index].maxTime = e.target.value ? parseInt(e.target.value) : 999;
-                              setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
-                            }}
-                            placeholder={config.maxTime === 999 ? "Any time" : "Seconds"}
-                            className="mt-1"
-                            disabled={config.maxTime === 999}
-                          />
+                          <Label className="text-xs">Position</Label>
+                          <div className="mt-1 p-2 bg-gray-100 rounded border text-sm font-medium">
+                            {index === 0 ? "1st Place" : 
+                             index === 1 ? "2nd Place" : 
+                             index === 2 ? "3rd Place" : 
+                             index === newQuiz.speedScoringConfig.length - 1 ? "All Others" :
+                             `${index + 1}${index === 3 ? 'th' : index === 4 ? 'th' : 'th'} Place`}
+                          </div>
                         </div>
                         <div className="flex-1">
                           <Label className="text-xs">Points awarded</Label>
@@ -663,7 +658,7 @@ export default function AdminDashboard() {
                             className="mt-1"
                           />
                         </div>
-                        {index < newQuiz.speedScoringConfig.length - 1 && (
+                        {index < newQuiz.speedScoringConfig.length - 1 && newQuiz.speedScoringConfig.length > 2 && (
                           <Button
                             type="button"
                             variant="outline"
@@ -678,19 +673,21 @@ export default function AdminDashboard() {
                         )}
                       </div>
                     ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const newConfig = [...newQuiz.speedScoringConfig];
-                        const lastTime = newConfig[newConfig.length - 2]?.maxTime || 0;
-                        newConfig.splice(-1, 0, { maxTime: lastTime + 10, points: 5 });
-                        setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
-                      }}
-                    >
-                      + Add Time Tier
-                    </Button>
+                    {newQuiz.speedScoringConfig.length < 6 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newConfig = [...newQuiz.speedScoringConfig];
+                          const newPosition = newConfig.length;
+                          newConfig.splice(-1, 0, { maxTime: 0, points: Math.max(5, newConfig[newConfig.length - 2]?.points - 5 || 5) });
+                          setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                        }}
+                      >
+                        + Add Position
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
