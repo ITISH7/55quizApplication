@@ -1,0 +1,42 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+3:38:31 PM [express] serving on port 5000
+Connected to MongoDB Atlas
+Browserslist: browsers data (caniuse-lite) is 10 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+3:38:40 PM [express] GET /api/auth/me 304 in 45ms :: {"user":{"id":"b2ae1a38-8eba-4bba-a498-292363c7…
+3:38:40 PM [express] GET /api/quizzes 304 in 79ms :: {"quizzes":[{"id":"2548f3d4-dcff-406e-9fca-faed…
+3:40:53 PM [express] GET /api/auth/me 304 in 35ms :: {"user":{"id":"b2ae1a38-8eba-4bba-a498-292363c7…
+3:40:53 PM [express] GET /api/quizzes 304 in 68ms :: {"quizzes":[{"id":"2548f3d4-dcff-406e-9fca-faed…
+3:41:03 PM [express] GET /api/auth/me 304 in 35ms :: {"user":{"id":"2f4ebbff-d8b5-4433-bbf9-4d812711…
+3:41:03 PM [express] GET /api/quizzes 304 in 71ms :: {"quizzes":[{"id":"2548f3d4-dcff-406e-9fca-faed…
+Join quiz error: Error: QuizSession validation failed: passkey: Path `passkey` is required.
+    at ValidationError.inspect (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/error/validation.js:52:26)
+    at formatValue (node:internal/util/inspect:850:19)
+    at inspect (node:internal/util/inspect:387:10)
+    at formatWithOptionsInternal (node:internal/util/inspect:2366:40)
+    at formatWithOptions (node:internal/util/inspect:2228:10)
+    at console.value (node:internal/console/constructor:345:14)
+    at console.error (node:internal/console/constructor:412:61)
+    at <anonymous> (/home/fiftyfive/Desktop/55Quiz/55quizApplication/server/routes.ts:395:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  errors: {
+    passkey: ValidatorError: Path `passkey` is required.
+        at validate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1407:13)
+        at SchemaType.doValidate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1391:7)
+        at /home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/document.js:3111:18
+        at process.processTicksAndRejections (node:internal/process/task_queues:85:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'passkey',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose#validatorError)]: true
+    }
+  },
+  _message: 'QuizSession validation failed'
+}
+3:41:09 PM [express] POST /api/quizzes/2548f3d4-dcff-406e-9fca-faed449e38ce/join 500 in 128ms :: {"e…
