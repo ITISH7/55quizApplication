@@ -62,7 +62,6 @@ const quizSessionSchema = new mongoose.Schema({
   _id: String,
   userId: { type: String, required: true },
   quizId: { type: String, required: true },
-  passkey: { type: String, required: true },
   score: { type: Number, default: 0 },
   currentQuestionNumber: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
