@@ -1,0 +1,101 @@
+    passkey: ValidatorError: Path `passkey` is required.
+        at validate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1407:13)
+        at SchemaType.doValidate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1391:7)
+        at /home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/document.js:3111:18
+        at process.processTicksAndRejections (node:internal/process/task_queues:85:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'passkey',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose#validatorError)]: true
+    }
+  },
+  _message: 'QuizSession validation failed'
+}
+3:45:20 PM [express] POST /api/quizzes/f9bbbc91-18c4-43ff-b80a-3c3fa157253e/join 500 in 113ms :: {"e…
+3:45:34 PM [express] POST /api/quizzes/b7a1135b-1ef9-440b-8bc1-03ba28d338e0/join 400 in 74ms :: {"er…
+Join quiz error: Error: QuizSession validation failed: passkey: Path `passkey` is required.
+    at ValidationError.inspect (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/error/validation.js:52:26)
+    at formatValue (node:internal/util/inspect:850:19)
+    at inspect (node:internal/util/inspect:387:10)
+    at formatWithOptionsInternal (node:internal/util/inspect:2366:40)
+    at formatWithOptions (node:internal/util/inspect:2228:10)
+    at console.value (node:internal/console/constructor:345:14)
+    at console.error (node:internal/console/constructor:412:61)
+    at <anonymous> (/home/fiftyfive/Desktop/55Quiz/55quizApplication/server/routes.ts:395:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  errors: {
+    passkey: ValidatorError: Path `passkey` is required.
+        at validate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1407:13)
+        at SchemaType.doValidate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1391:7)
+        at /home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/document.js:3111:18
+        at process.processTicksAndRejections (node:internal/process/task_queues:85:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'passkey',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose#validatorError)]: true
+    }
+  },
+  _message: 'QuizSession validation failed'
+}
+3:45:43 PM [express] POST /api/quizzes/2548f3d4-dcff-406e-9fca-faed449e38ce/join 500 in 118ms :: {"e…
+Join quiz error: Error: QuizSession validation failed: passkey: Path `passkey` is required.
+    at ValidationError.inspect (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/error/validation.js:52:26)
+    at formatValue (node:internal/util/inspect:850:19)
+    at inspect (node:internal/util/inspect:387:10)
+    at formatWithOptionsInternal (node:internal/util/inspect:2366:40)
+    at formatWithOptions (node:internal/util/inspect:2228:10)
+    at console.value (node:internal/console/constructor:345:14)
+    at console.error (node:internal/console/constructor:412:61)
+    at <anonymous> (/home/fiftyfive/Desktop/55Quiz/55quizApplication/server/routes.ts:395:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  errors: {
+    passkey: ValidatorError: Path `passkey` is required.
+        at validate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1407:13)
+        at SchemaType.doValidate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1391:7)
+        at /home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/document.js:3111:18
+        at process.processTicksAndRejections (node:internal/process/task_queues:85:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'passkey',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose#validatorError)]: true
+    }
+  },
+  _message: 'QuizSession validation failed'
+}
+3:48:18 PM [express] POST /api/quizzes/f9bbbc91-18c4-43ff-b80a-3c3fa157253e/join 500 in 108ms :: {"e…
+OTP for itish.jain@fiftyfivetech.io: 985987
+3:48:28 PM [express] POST /api/auth/send-otp 200 in 45ms :: {"message":"OTP sent successfully"}
+3:48:43 PM [express] POST /api/auth/verify-otp 200 in 111ms :: {"token":"2f4ebbff-d8b5-4433-bbf9-4d8…
+3:48:44 PM [express] GET /api/quizzes 304 in 78ms :: {"quizzes":[{"id":"f9bbbc91-18c4-43ff-b80a-3c3f…
+Join quiz error: Error: QuizSession validation failed: passkey: Path `passkey` is required.
+    at ValidationError.inspect (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/error/validation.js:52:26)
+    at formatValue (node:internal/util/inspect:850:19)
+    at inspect (node:internal/util/inspect:387:10)
+    at formatWithOptionsInternal (node:internal/util/inspect:2366:40)
+    at formatWithOptions (node:internal/util/inspect:2228:10)
+    at console.value (node:internal/console/constructor:345:14)
+    at console.error (node:internal/console/constructor:412:61)
+    at <anonymous> (/home/fiftyfive/Desktop/55Quiz/55quizApplication/server/routes.ts:395:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  errors: {
+    passkey: ValidatorError: Path `passkey` is required.
+        at validate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1407:13)
+        at SchemaType.doValidate (/home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/schemaType.js:1391:7)
+        at /home/fiftyfive/Desktop/55Quiz/55quizApplication/node_modules/mongoose/lib/document.js:3111:18
+        at process.processTicksAndRejections (node:internal/process/task_queues:85:11) {
+      properties: [Object],
+      kind: 'required',
+      path: 'passkey',
+      value: undefined,
+      reason: undefined,
+      [Symbol(mongoose#validatorError)]: true
+    }
+  },
+  _message: 'QuizSession validation failed'
+}

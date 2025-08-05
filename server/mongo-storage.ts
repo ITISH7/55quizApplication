@@ -90,13 +90,17 @@ const otpSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// MongoDB Models
-const UserModel = mongoose.model('User', userSchema);
-const QuizModel = mongoose.model('Quiz', quizSchema);
-const QuestionModel = mongoose.model('Question', questionSchema);
+// MongoDB Models - Force recreation to clear any cache
+const UserModel = mongoose.models.User || mongoose.model('User', userSchema);
+const QuizModel = mongoose.models.Quiz || mongoose.model('Quiz', quizSchema);
+const QuestionModel = mongoose.models.Question || mongoose.model('Question', questionSchema);
+// Force delete and recreate QuizSession model to clear schema cache
+if (mongoose.models.QuizSession) {
+  delete mongoose.models.QuizSession;
+}
 const QuizSessionModel = mongoose.model('QuizSession', quizSessionSchema);
-const AnswerModel = mongoose.model('Answer', answerSchema);
-const OtpModel = mongoose.model('OTP', otpSchema);
+const AnswerModel = mongoose.models.Answer || mongoose.model('Answer', answerSchema);
+const OtpModel = mongoose.models.OTP || mongoose.model('OTP', otpSchema);
 
 export class MongoStorage implements IStorage {
   private connected = false;
