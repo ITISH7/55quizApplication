@@ -365,35 +365,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/quizzes/:id/join", requireAuth, async (req: any, res) => {
     try {
       const { passkey } = req.body;
+      console.log(`Join quiz attempt - User: ${req.user.email}, Quiz: ${req.params.id}, Passkey: ${passkey}`);
       
       const quiz = await storage.getQuiz(req.params.id);
       if (!quiz) {
+        console.log('Quiz not found:', req.params.id);
         return res.status(404).json({ error: "Quiz not found" });
       }
 
+      console.log(`Quiz found - Title: ${quiz.title}, Status: ${quiz.status}, Expected passkey: ${quiz.passkey}`);
+
       if (quiz.passkey !== passkey) {
+        console.log('Invalid passkey provided');
         return res.status(400).json({ error: "Invalid passkey" });
       }
 
       if (quiz.status !== "active") {
+        console.log('Quiz is not active, status:', quiz.status);
         return res.status(400).json({ error: "Quiz is not active" });
       }
 
       // Check if user already has a session
+      console.log('Checking for existing session...');
       let session = await storage.getUserQuizSession(req.user.id, req.params.id);
       if (!session) {
+        console.log('Creating new session...');
         session = await storage.createQuizSession({
           quizId: req.params.id,
           userId: req.user.id
         });
+        console.log('Session created:', session.id);
+      } else {
+        console.log('Existing session found:', session.id);
       }
 
+      console.log('Updating user session...');
       await storage.updateUserSession(req.user.id, session.id);
+      console.log('Join quiz successful');
 
       res.json({ session });
     } catch (error) {
-      console.error('Join quiz error:', error);
-      res.status(500).json({ error: "Failed to join quiz" });
+      console.error('Join quiz error details:', error);
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ error: "Failed to join quiz", details: error.message });
     }
   });
 
