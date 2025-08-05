@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { Leaderboard } from "@/components/leaderboard";
-import { ArrowLeft, Play, Eye, SkipForward, ArrowRight, Users, Download, X } from "lucide-react";
+import { ArrowLeft, Play, Eye, SkipForward, ArrowRight, Users, Download, X, Gift } from "lucide-react";
 
 export default function QuizControl() {
   const [, setLocation] = useLocation();
@@ -156,14 +156,50 @@ export default function QuizControl() {
     }
   };
 
-  const handleSkipQuestion = () => {
-    const nextIndex = currentQuestionIndex + 1;
-    if (nextIndex < questions.length) {
-      skipQuestionMutation.mutate(nextIndex);
+  const getNextBonusQuestion = () => {
+    // Find the next bonus question after current index
+    for (let i = currentQuestionIndex + 1; i < questions.length; i++) {
+      if (questions[i].isBonus) {
+        return i;
+      }
+    }
+    return null;
+  };
+
+  const handleBonusQuestion = () => {
+    const bonusIndex = getNextBonusQuestion();
+    if (bonusIndex !== null) {
+      // Store current position for return after bonus
+      sessionStorage.setItem('preBonusIndex', currentQuestionIndex.toString());
+      setCurrentQuestionIndex(bonusIndex);
+      setIsTimerRunning(false);
+      toast({
+        title: "Bonus Question Activated",
+        description: `Switched to bonus question ${bonusIndex + 1}`
+      });
     }
   };
 
   const handleNextQuestion = () => {
+    // Check if we're returning from a bonus question
+    const preBonusIndex = sessionStorage.getItem('preBonusIndex');
+    if (preBonusIndex && currentQuestion?.isBonus) {
+      // Return to the question after the pre-bonus question
+      const returnIndex = parseInt(preBonusIndex) + 1;
+      sessionStorage.removeItem('preBonusIndex');
+      
+      if (returnIndex < questions.length) {
+        setCurrentQuestionIndex(returnIndex);
+        setIsTimerRunning(false);
+        toast({
+          title: "Returned to Regular Questions",
+          description: `Continuing with question ${returnIndex + 1}`
+        });
+        return;
+      }
+    }
+    
+    // Normal next question flow
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
       setIsTimerRunning(false);
@@ -242,6 +278,11 @@ export default function QuizControl() {
                     <span className="text-lg font-bold text-primary-600">{currentQuestionIndex + 1}</span>
                     <span className="text-sm text-gray-500">of</span>
                     <span className="text-lg font-bold text-gray-900">{questions.length}</span>
+                    {sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus && (
+                      <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                        Bonus Mode
+                      </Badge>
+                    )}
                   </div>
                 </div>
 
@@ -292,7 +333,7 @@ export default function QuizControl() {
                     <div className="flex items-center justify-between text-sm text-gray-600 mb-4">
                       <div className="flex items-center space-x-4">
                         <span>Time Limit: <strong>{currentQuestion.timeLimit}s</strong></span>
-                        <span>Points: <strong>10</strong></span>
+                        <span>Points: <strong>{currentQuestion.points || 10}</strong></span>
                         {currentQuestion.isBonus && (
                           <Badge variant="outline" className="bg-warning-50 text-warning-700 border-warning-200">
                             Bonus Question
@@ -322,20 +363,26 @@ export default function QuizControl() {
                       
                       <Button 
                         variant="outline"
-                        onClick={handleSkipQuestion}
-                        disabled={skipQuestionMutation.isPending || currentQuestionIndex >= questions.length - 1}
+                        onClick={handleBonusQuestion}
+                        disabled={skipQuestionMutation.isPending || getNextBonusQuestion() === null}
+                        className="bg-yellow-50 hover:bg-yellow-100 border-yellow-300 text-yellow-800"
                       >
-                        <SkipForward className="mr-2 h-4 w-4" />
-                        Skip Question
+                        <Gift className="mr-2 h-4 w-4" />
+                        Bonus Question
                       </Button>
 
                       <Button 
                         onClick={handleNextQuestion}
                         disabled={currentQuestionIndex >= questions.length - 1}
                         variant="outline"
+                        className={sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus 
+                          ? "bg-green-50 hover:bg-green-100 border-green-300 text-green-800" 
+                          : ""}
                       >
                         <ArrowRight className="mr-2 h-4 w-4" />
-                        Next Question
+                        {sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus 
+                          ? "Return to Quiz" 
+                          : "Next Question"}
                       </Button>
                     </div>
                   </>
