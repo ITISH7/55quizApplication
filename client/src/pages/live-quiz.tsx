@@ -19,6 +19,7 @@ export default function LiveQuiz() {
   const { user, token } = useAuth();
   const { toast } = useToast();
   
+  // Local state
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [userSession, setUserSession] = useState<any>(null);
@@ -27,6 +28,19 @@ export default function LiveQuiz() {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [quizEnded, setQuizEnded] = useState(false);
+
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('State update - selectedAnswer:', selectedAnswer);
+  }, [selectedAnswer]);
+
+  useEffect(() => {
+    console.log('State update - isAnswerSubmitted:', isAnswerSubmitted);
+  }, [isAnswerSubmitted]);
+
+  useEffect(() => {
+    console.log('State update - userSession:', userSession);
+  }, [userSession]);
 
   // Redirect if not logged in
   if (!user) {
@@ -382,7 +396,12 @@ export default function LiveQuiz() {
                 return (
                   <button
                     key={index}
-                    onClick={() => !isAnswerSubmitted && setSelectedAnswer(optionLetter)}
+                    onClick={() => {
+                      if (!isAnswerSubmitted) {
+                        console.log('Option selected:', optionLetter);
+                        setSelectedAnswer(optionLetter);
+                      }
+                    }}
                     disabled={isAnswerSubmitted}
                     className={`p-6 rounded-xl border-2 transition-all duration-200 text-left ${
                       isSelected
@@ -408,6 +427,13 @@ export default function LiveQuiz() {
               })}
             </div>
 
+            {/* Debug Info */}
+            <div className="text-center mb-4">
+              <p className="text-sm text-gray-500">
+                Debug: Selected={selectedAnswer || 'none'} | Submitted={isAnswerSubmitted ? 'yes' : 'no'} | Session={userSession?.id || 'none'}
+              </p>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex items-center justify-center space-x-4">
               <Button 
@@ -420,9 +446,10 @@ export default function LiveQuiz() {
               </Button>
               <Button 
                 onClick={handleSubmitAnswer}
-                disabled={!selectedAnswer || isAnswerSubmitted || submitAnswerMutation.isPending}
+                disabled={!selectedAnswer || selectedAnswer === "" || isAnswerSubmitted || submitAnswerMutation.isPending}
                 size="lg"
                 className="min-w-[140px]"
+                title={`Debug: selectedAnswer=${selectedAnswer}, isAnswerSubmitted=${isAnswerSubmitted}, pending=${submitAnswerMutation.isPending}`}
               >
                 {submitAnswerMutation.isPending ? (
                   <>
