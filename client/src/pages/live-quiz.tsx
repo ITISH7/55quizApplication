@@ -115,7 +115,10 @@ export default function LiveQuiz() {
 
   useEffect(() => {
     if (lastMessage) {
+      console.log('LiveQuiz received WebSocket message:', lastMessage);
+      
       if (lastMessage.type === "question_revealed") {
+        console.log('Question revealed:', lastMessage.question);
         setCurrentQuestion(lastMessage.question);
         setSelectedAnswer("");
         // Check if this question was already answered
@@ -124,12 +127,34 @@ export default function LiveQuiz() {
         setQuestionStartTime(Date.now());
         setTimeRemaining(lastMessage.question?.timeLimit || 45);
       } else if (lastMessage.type === "answer_submitted") {
+        console.log('Answer submitted, refreshing leaderboard...');
         refetchLeaderboard();
       } else if (lastMessage.type === "quiz_ended") {
+        console.log('Quiz ended by admin, ending quiz...');
         setQuizEnded(true);
+        toast({
+          title: "Quiz Ended",
+          description: "The quiz has been ended by the admin. Redirecting to dashboard...",
+        });
+        // Redirect to dashboard after 3 seconds
+        setTimeout(() => {
+          setLocation("/dashboard");
+        }, 3000);
+      } else if (lastMessage.type === "question_ended") {
+        console.log('Question ended by admin');
+        toast({
+          title: "Question Ended",
+          description: "Time's up! Moving to next question...",
+        });
+      } else if (lastMessage.type === "question_skipped") {
+        console.log('Question skipped by admin');
+        toast({
+          title: "Question Skipped", 
+          description: "Admin has moved to the next question.",
+        });
       }
     }
-  }, [lastMessage, refetchLeaderboard]);
+  }, [lastMessage, refetchLeaderboard, toast, setLocation]);
 
   const submitAnswerMutation = useMutation({
     mutationFn: async ({ sessionId, questionId, selectedAnswer }: { 
