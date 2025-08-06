@@ -18,18 +18,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const requireAuth = async (req: any, res: any, next: any) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
+      console.log('No token provided');
       return res.status(401).json({ error: "No token provided" });
     }
 
     try {
       // Simple token format: userId (in production, use proper JWT)
       const user = await storage.getUser(token);
+      console.log('Token validation:', token, 'User:', user ? user.email : 'not found');
       if (!user) {
         return res.status(401).json({ error: "Invalid token" });
       }
       req.user = user;
       next();
     } catch (error) {
+      console.log('Auth error:', error);
       res.status(401).json({ error: "Invalid token" });
     }
   };
@@ -404,7 +407,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Join quiz successful');
 
       res.json({ session });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Join quiz error details:', error);
       console.error('Error stack:', error.stack);
       res.status(500).json({ error: "Failed to join quiz", details: error.message });
@@ -415,9 +418,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/answers", requireAuth, async (req: any, res) => {
     try {
       const { sessionId, questionId, selectedAnswer, answerTime } = req.body;
+      console.log('Answer submission request:', { sessionId, questionId, selectedAnswer, userId: req.user.id });
 
       const session = await storage.getQuizSession(sessionId);
+      console.log('Session lookup:', session);
       if (!session || session.userId !== req.user.id) {
+        console.log('Session validation failed:', { sessionExists: !!session, sessionUserId: session?.userId, reqUserId: req.user.id });
         return res.status(403).json({ error: "Invalid session" });
       }
 
@@ -439,7 +445,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const quiz = await storage.getQuiz(session.quizId);
         if (quiz?.scoringType === "speed" && quiz.speedScoringConfig) {
           // Position-based scoring with custom configuration
-          const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : quiz.speedScoringConfig.timeThresholds || [];
+          const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : (quiz.speedScoringConfig as any)?.timeThresholds || [];
           
           if (speedConfig.length > 0 && answerOrder <= speedConfig.length) {
             // Use custom points for this position (1st, 2nd, 3rd, etc.)
@@ -493,6 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ answer, points, isCorrect });
     } catch (error) {
+      console.error('Submit answer error:', error);
       res.status(500).json({ error: "Failed to submit answer" });
     }
   });

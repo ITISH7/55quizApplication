@@ -108,7 +108,10 @@ export default function LiveQuiz() {
       });
     },
     onError: (error: any) => {
-      console.log('Submit answer error:', error);
+      console.error('Submit answer error details:', error);
+      console.error('User session:', userSession);
+      console.error('Current question:', currentQuestion);
+      console.error('Selected answer:', selectedAnswer);
       toast({
         title: "Failed to Submit Answer",
         description: error.message || "Please try again",
@@ -118,8 +121,17 @@ export default function LiveQuiz() {
   });
 
   const handleSubmitAnswer = () => {
-    if (!userSession || !currentQuestion) return;
+    if (!userSession || !currentQuestion) {
+      console.error('Cannot submit: missing session or question', { userSession, currentQuestion });
+      toast({
+        title: "Unable to Submit",
+        description: "Session not found. Please rejoin the quiz.",
+        variant: "destructive"
+      });
+      return;
+    }
     
+    console.log('Submitting answer:', { sessionId: userSession.id, questionId: currentQuestion.id, selectedAnswer });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
       questionId: currentQuestion.id,
@@ -148,23 +160,37 @@ export default function LiveQuiz() {
   const myLeaderboardEntry = leaderboard.find((entry: any) => entry.userId === user.id);
 
   // Get user session from API call when joining quiz
-  const { data: sessionData } = useQuery({
+  const { data: sessionData, error: sessionError } = useQuery({
     queryKey: ["/api/user/session", quizId],
     queryFn: async () => {
       const response = await fetch(`/api/user/session?quizId=${quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error("Failed to fetch session");
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Session fetch failed:', response.status, errorData);
+        throw new Error(errorData.error || "Failed to fetch session");
+      }
       return response.json();
     },
-    enabled: !!quizId && !!token
+    enabled: !!quizId && !!token,
+    retry: false
   });
 
   useEffect(() => {
     if (sessionData?.session) {
+      console.log('Session data retrieved:', sessionData.session);
       setUserSession({ id: sessionData.session.id });
+    } else if (sessionError) {
+      console.log('Session error:', sessionError);
+      // Show user-friendly error message if no session found
+      toast({
+        title: "Session Error",
+        description: "Unable to find your quiz session. Please rejoin the quiz.",
+        variant: "destructive"
+      });
     }
-  }, [sessionData]);
+  }, [sessionData, sessionError]);
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
