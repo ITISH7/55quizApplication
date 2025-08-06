@@ -28,6 +28,9 @@ export default function LiveQuiz() {
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [quizEnded, setQuizEnded] = useState(false);
+  const [forceRefresh, setForceRefresh] = useState(0);
+  const [manualSessionCheck, setManualSessionCheck] = useState<any>(null);
+  const [manualCheckError, setManualCheckError] = useState<string>("");
 
   // Debug logging for state changes
   useEffect(() => {
@@ -47,6 +50,40 @@ export default function LiveQuiz() {
     setLocation("/login");
     return null;
   }
+
+  // Automatic session check on page load
+  useEffect(() => {
+    if (quizId && token && user) {
+      console.log('🚀 Auto session check on page load');
+      const checkSession = async () => {
+        try {
+          const response = await fetch(`/api/user/session?quizId=${quizId}&auto=${Date.now()}`, {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Cache-Control': 'no-store'
+            }
+          });
+          const data = await response.json();
+          
+          if (response.ok) {
+            console.log('✅ Auto session check SUCCESS:', data);
+            setUserSession({ id: data.session.id });
+            toast({
+              title: "Session Found!",
+              description: "Welcome to the live quiz!",
+            });
+          } else {
+            console.log('❌ Auto session check FAILED:', data);
+          }
+        } catch (error) {
+          console.log('💥 Auto session check ERROR:', error);
+        }
+      };
+      
+      // Small delay to ensure everything is loaded
+      setTimeout(checkSession, 500);
+    }
+  }, [quizId, token, user?.id]);
 
   const { data: quizData } = useQuery({
     queryKey: ["/api/quizzes", quizId],
@@ -175,13 +212,17 @@ export default function LiveQuiz() {
 
   // Get user session from API call when joining quiz
   const { data: sessionData, error: sessionError, refetch: refetchSession } = useQuery({
-    queryKey: ["/api/user/session", quizId],
+    queryKey: ["/api/user/session", quizId, forceRefresh], // Include forceRefresh to bypass cache
     queryFn: async () => {
-      console.log('🔍 Fetching session for quiz:', quizId, 'User:', user?.email, 'Token present:', !!token);
-      const url = `/api/user/session?quizId=${quizId}`;
+      console.log('🔍 Fetching session for quiz:', quizId, 'User:', user?.email, 'Token present:', !!token, 'Refresh:', forceRefresh);
+      const url = `/api/user/session?quizId=${quizId}&t=${Date.now()}`; // Add timestamp to bypass any caching
       
       const response = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
       
       console.log('📡 Response status:', response.status);
@@ -200,7 +241,8 @@ export default function LiveQuiz() {
     retry: false, // Don't retry - if it fails, show error immediately
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    staleTime: 0 // Always fetch fresh data
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0 // Don't cache at all
   });
 
   useEffect(() => {
@@ -236,8 +278,8 @@ export default function LiveQuiz() {
     }
   }, [sessionData, sessionError, setLocation, token, user, quizId, toast]);
 
-  // Show loading state while checking session
-  if (!sessionData && !sessionError) {
+  // Show loading state while checking session OR if we have a manual session but React Query hasn't caught up
+  if ((!sessionData && !sessionError) || (manualSessionCheck && !userSession)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
         <Card className="w-full max-w-lg shadow-xl">
@@ -249,14 +291,70 @@ export default function LiveQuiz() {
               <p>Quiz: {quizId}</p>
               <p>User: {user?.email}</p>
               <p>Token: {token ? 'Present' : 'Missing'}</p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => refetchSession()}
-                className="mt-2"
-              >
-                Retry Connection
-              </Button>
+              {manualSessionCheck && (
+                <div className="bg-green-100 p-2 rounded mt-2">
+                  <p className="text-green-800 text-xs">Manual Check: SUCCESS</p>
+                  <p className="text-green-700 text-xs">Session: {manualSessionCheck.session?.id}</p>
+                </div>
+              )}
+              {manualCheckError && (
+                <div className="bg-red-100 p-2 rounded mt-2">
+                  <p className="text-red-800 text-xs">Manual Check: {manualCheckError}</p>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setForceRefresh(prev => prev + 1);
+                    refetchSession();
+                  }}
+                  className="mt-2"
+                >
+                  Retry Connection
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setLocation("/dashboard")}
+                  className="mt-2"
+                >
+                  Back to Dashboard
+                </Button>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={async () => {
+                    console.log('🔧 Manual session check...');
+                    try {
+                      const response = await fetch(`/api/user/session?quizId=${quizId}&manual=${Date.now()}`, {
+                        headers: { 
+                          Authorization: `Bearer ${token}`,
+                          'Cache-Control': 'no-store'
+                        }
+                      });
+                      const data = await response.json();
+                      
+                      if (response.ok) {
+                        console.log('✅ Manual check SUCCESS:', data);
+                        setManualSessionCheck(data);
+                        setManualCheckError("");
+                        setUserSession({ id: data.session.id });
+                      } else {
+                        console.log('❌ Manual check FAILED:', data);
+                        setManualCheckError(`${response.status}: ${data.error}`);
+                      }
+                    } catch (error) {
+                      console.log('💥 Manual check ERROR:', error);
+                      setManualCheckError(`Network Error: ${error}`);
+                    }
+                  }}
+                  className="mt-2"
+                >
+                  Manual Check
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -265,7 +363,8 @@ export default function LiveQuiz() {
   }
 
   // Show error state if no session is found - but allow retry
-  if (sessionError && !userSession) {
+  // Skip if we have a manual session check that succeeded
+  if (sessionError && !userSession && !manualSessionCheck) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center">
         <Card className="w-full max-w-lg shadow-xl">
