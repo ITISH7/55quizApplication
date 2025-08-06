@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { Leaderboard } from "@/components/leaderboard";
-import { Check, SkipForward, Users, Trophy } from "lucide-react";
+import { Check, SkipForward, Users, Trophy, LogOut, AlertCircle } from "lucide-react";
 
 export default function LiveQuiz() {
   const [, setLocation] = useLocation();
@@ -23,6 +23,7 @@ export default function LiveQuiz() {
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [userSession, setUserSession] = useState<any>(null);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(new Set());
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
 
@@ -65,7 +66,9 @@ export default function LiveQuiz() {
       if (lastMessage.type === "question_revealed") {
         setCurrentQuestion(lastMessage.question);
         setSelectedAnswer("");
-        setIsAnswerSubmitted(false);
+        // Check if this question was already answered
+        const wasAnswered = submittedQuestions.has(lastMessage.question.id);
+        setIsAnswerSubmitted(wasAnswered);
         setQuestionStartTime(Date.now());
         setTimeRemaining(lastMessage.question?.timeLimit || 45);
       } else if (lastMessage.type === "answer_submitted") {
@@ -89,8 +92,9 @@ export default function LiveQuiz() {
       });
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setIsAnswerSubmitted(true);
+      setSubmittedQuestions(prev => new Set([...Array.from(prev), variables.questionId]));
       refetchLeaderboard();
       toast({
         title: data.isCorrect ? "Correct!" : "Incorrect",
@@ -101,9 +105,10 @@ export default function LiveQuiz() {
       });
     },
     onError: (error: any) => {
+      console.log('Submit answer error:', error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Failed to Submit Answer",
+        description: error.message || "Please try again",
         variant: "destructive"
       });
     }
@@ -127,6 +132,12 @@ export default function LiveQuiz() {
       questionId: currentQuestion.id,
       selectedAnswer: null
     });
+  };
+
+  const handleExitQuiz = () => {
+    if (confirm("Are you sure you want to exit the quiz? Your progress will be saved.")) {
+      setLocation("/dashboard");
+    }
   };
 
   const quiz = quizData?.quiz;
@@ -182,6 +193,15 @@ export default function LiveQuiz() {
                   #{myLeaderboardEntry?.rank || "-"}
                 </p>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExitQuiz}
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                Exit Quiz
+              </Button>
             </div>
           </div>
         </div>
@@ -273,9 +293,24 @@ export default function LiveQuiz() {
                 onClick={handleSubmitAnswer}
                 disabled={!selectedAnswer || isAnswerSubmitted || submitAnswerMutation.isPending}
                 size="lg"
+                className="min-w-[140px]"
               >
-                <Check className="h-4 w-4 mr-2" />
-                Submit Answer
+                {submitAnswerMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Submitting...
+                  </>
+                ) : isAnswerSubmitted ? (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Submitted
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Submit Answer
+                  </>
+                )}
               </Button>
             </div>
 
