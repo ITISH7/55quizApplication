@@ -115,10 +115,7 @@ export default function LiveQuiz() {
 
   useEffect(() => {
     if (lastMessage) {
-      console.log('LiveQuiz received WebSocket message:', lastMessage);
-      
       if (lastMessage.type === "question_revealed") {
-        console.log('Question revealed:', lastMessage.question);
         setCurrentQuestion(lastMessage.question);
         setSelectedAnswer("");
         // Check if this question was already answered
@@ -127,34 +124,12 @@ export default function LiveQuiz() {
         setQuestionStartTime(Date.now());
         setTimeRemaining(lastMessage.question?.timeLimit || 45);
       } else if (lastMessage.type === "answer_submitted") {
-        console.log('Answer submitted, refreshing leaderboard...');
         refetchLeaderboard();
       } else if (lastMessage.type === "quiz_ended") {
-        console.log('Quiz ended by admin, ending quiz...');
         setQuizEnded(true);
-        toast({
-          title: "Quiz Ended",
-          description: "The quiz has been ended by the admin. Redirecting to dashboard...",
-        });
-        // Redirect to dashboard after 3 seconds
-        setTimeout(() => {
-          setLocation("/dashboard");
-        }, 3000);
-      } else if (lastMessage.type === "question_ended") {
-        console.log('Question ended by admin');
-        toast({
-          title: "Question Ended",
-          description: "Time's up! Moving to next question...",
-        });
-      } else if (lastMessage.type === "question_skipped") {
-        console.log('Question skipped by admin');
-        toast({
-          title: "Question Skipped", 
-          description: "Admin has moved to the next question.",
-        });
       }
     }
-  }, [lastMessage, refetchLeaderboard, toast, setLocation]);
+  }, [lastMessage, refetchLeaderboard]);
 
   const submitAnswerMutation = useMutation({
     mutationFn: async ({ sessionId, questionId, selectedAnswer }: { 
@@ -197,8 +172,8 @@ export default function LiveQuiz() {
   });
 
   const handleSubmitAnswer = () => {
-    if (!userSession || !displayQuestion) {
-      console.error('Cannot submit: missing session or question', { userSession, displayQuestion });
+    if (!userSession || !currentQuestion) {
+      console.error('Cannot submit: missing session or question', { userSession, currentQuestion });
       toast({
         title: "Unable to Submit",
         description: "Session not found. Please rejoin the quiz.",
@@ -209,21 +184,21 @@ export default function LiveQuiz() {
     
     // Convert frontend option format (A,B,C,D) to backend format (Option A, Option B, etc)
     const backendAnswer = selectedAnswer ? `Option ${selectedAnswer}` : null;
-    console.log('Submitting answer:', { sessionId: userSession.id, questionId: displayQuestion.id, selectedAnswer, backendAnswer });
+    console.log('Submitting answer:', { sessionId: userSession.id, questionId: currentQuestion.id, selectedAnswer, backendAnswer });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
-      questionId: displayQuestion.id,
+      questionId: currentQuestion.id,
       selectedAnswer: backendAnswer
     });
   };
 
   const handleSkipQuestion = () => {
-    if (!userSession || !displayQuestion) return;
+    if (!userSession || !currentQuestion) return;
     
-    console.log('Skipping question:', { sessionId: userSession.id, questionId: displayQuestion.id });
+    console.log('Skipping question:', { sessionId: userSession.id, questionId: currentQuestion.id });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
-      questionId: displayQuestion.id,
+      questionId: currentQuestion.id,
       selectedAnswer: null
     });
   };
@@ -237,22 +212,6 @@ export default function LiveQuiz() {
   const quiz = quizData?.quiz;
   const leaderboard = leaderboardData?.leaderboard || [];
   const myLeaderboardEntry = leaderboard.find((entry: any) => entry.userId === user.id);
-
-  // Display revealed questions for users
-  const revealedQuestions = quiz?.questions?.filter((q: any) => q.isRevealed) || [];
-  const currentRevealedQuestion = revealedQuestions[revealedQuestions.length - 1];
-
-  console.log('📝 Quiz questions debug:', {
-    totalQuestions: quiz?.questions?.length || 0,
-    revealedCount: revealedQuestions.length,
-    currentFromWebSocket: currentQuestion?.id,
-    currentFromAPI: currentRevealedQuestion?.id,
-    lastRevealed: currentRevealedQuestion,
-    quizStatus: quiz?.status
-  });
-
-  // If no current question from WebSocket, use the latest revealed question from API
-  const displayQuestion = currentQuestion || currentRevealedQuestion;
 
   // Get user session from API call when joining quiz
   const { data: sessionData, error: sessionError, refetch: refetchSession } = useQuery({
@@ -496,7 +455,7 @@ export default function LiveQuiz() {
   }
 
   // Waiting for quiz to start or question to be revealed
-  if (!quiz || !displayQuestion) {
+  if (!quiz || !currentQuestion) {
     const isQuizActive = quiz?.status === "active";
     
     return (
@@ -551,7 +510,7 @@ export default function LiveQuiz() {
     );
   }
 
-  const currentQuestionNumber = displayQuestion.questionNumber || 1;
+  const currentQuestionNumber = currentQuestion.questionNumber || 1;
   const totalQuestions = quiz.questions?.length || 10;
 
   return (
@@ -615,14 +574,14 @@ export default function LiveQuiz() {
                 <span className="text-2xl font-bold text-primary-600">{currentQuestionNumber}</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                {displayQuestion.text}
+                {currentQuestion.text}
               </h2>
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
                 <span>
                   <Users className="inline h-4 w-4 mr-1" />
                   {leaderboard.length} participants
                 </span>
-                {displayQuestion.isBonus && (
+                {currentQuestion.isBonus && (
                   <Badge variant="outline" className="bg-warning-50 text-warning-700 border-warning-200">
                     ⭐ Bonus Question
                   </Badge>
@@ -632,7 +591,7 @@ export default function LiveQuiz() {
 
             {/* Answer Options */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {displayQuestion.options.map((option: string, index: number) => {
+              {currentQuestion.options.map((option: string, index: number) => {
                 const optionLetter = String.fromCharCode(65 + index);
                 const isSelected = selectedAnswer === optionLetter;
                 // Convert frontend option (A,B,C,D) to backend format (Option A, Option B, etc)

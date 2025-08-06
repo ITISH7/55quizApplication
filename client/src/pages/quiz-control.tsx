@@ -163,14 +163,6 @@ export default function QuizControl() {
         return i;
       }
     }
-    
-    // If no bonus question found after current, check from beginning
-    for (let i = 0; i <= currentQuestionIndex; i++) {
-      if (questions[i].isBonus && i !== currentQuestionIndex) {
-        return i;
-      }
-    }
-    
     return null;
   };
 
@@ -184,12 +176,6 @@ export default function QuizControl() {
       toast({
         title: "Bonus Question Activated",
         description: `Switched to bonus question ${bonusIndex + 1}`
-      });
-    } else {
-      toast({
-        title: "No Bonus Questions Available",
-        description: "All bonus questions have been used or none exist",
-        variant: "destructive"
       });
     }
   };

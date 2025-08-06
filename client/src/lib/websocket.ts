@@ -13,13 +13,10 @@ export class WebSocketManager {
         const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
         const wsUrl = `${protocol}//${window.location.host}/ws?token=${this.token}${this.quizId ? `&quizId=${this.quizId}` : ''}`;
         
-        console.log('🔌 Attempting WebSocket connection to:', wsUrl);
-        console.log('🔑 Token:', this.token ? this.token.substring(0, 10) + '...' : 'missing');
-        
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
-          console.log('🟢 WebSocket connected successfully!');
+          console.log('WebSocket connected');
           this.reconnectAttempts = 0;
           resolve();
         };
@@ -27,15 +24,14 @@ export class WebSocketManager {
         this.ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
-            console.log('📨 WebSocket message received:', data);
             this.notifyListeners(data.type, data);
           } catch (error) {
-            console.error('❌ Failed to parse WebSocket message:', error);
+            console.error('Failed to parse WebSocket message:', error);
           }
         };
 
         this.ws.onerror = (error) => {
-          console.error('🔴 WebSocket connection error:', error);
+          console.error('WebSocket error:', error);
           reject(error);
         };
 
