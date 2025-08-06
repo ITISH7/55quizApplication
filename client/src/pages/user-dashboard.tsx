@@ -46,10 +46,14 @@ export default function UserDashboard() {
 
   const joinQuizMutation = useMutation({
     mutationFn: async ({ quizId, passkey }: { quizId: string; passkey: string }) => {
+      console.log('Attempting to join quiz:', { quizId, passkey, token: token ? 'present' : 'missing' });
       const response = await apiRequest("POST", `/api/quizzes/${quizId}/join`, { passkey });
-      return response.json();
+      const data = await response.json();
+      console.log('Join quiz response:', data);
+      return data;
     },
     onSuccess: (data, variables) => {
+      console.log('Join quiz successful:', data);
       toast({
         title: "Success!",
         description: "Joined quiz successfully. Redirecting...",
@@ -61,7 +65,7 @@ export default function UserDashboard() {
       }, 1000);
     },
     onError: (error: any) => {
-      console.log('Join quiz error:', error);
+      console.error('Join quiz error details:', error);
       const errorMessage = error.message || error.error || "Failed to join quiz";
       toast({
         title: "Unable to Join Quiz",
@@ -73,6 +77,8 @@ export default function UserDashboard() {
 
   const handleJoinQuiz = (quizId: string) => {
     const passkey = passkeys[quizId];
+    
+    console.log('Join quiz attempt:', { quizId, passkey, userToken: token, userEmail: user?.email });
     if (!passkey) {
       toast({
         title: "Error",
