@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { Leaderboard } from "@/components/leaderboard";
-import { Check, SkipForward, Users, Trophy, LogOut, AlertCircle } from "lucide-react";
+import { Check, SkipForward, Users, Trophy, LogOut, AlertCircle, Clock, Brain, Home } from "lucide-react";
 
 export default function LiveQuiz() {
   const [, setLocation] = useLocation();
@@ -26,6 +26,7 @@ export default function LiveQuiz() {
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(new Set());
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
+  const [quizEnded, setQuizEnded] = useState(false);
 
   // Redirect if not logged in
   if (!user) {
@@ -73,6 +74,8 @@ export default function LiveQuiz() {
         setTimeRemaining(lastMessage.question?.timeLimit || 45);
       } else if (lastMessage.type === "answer_submitted") {
         refetchLeaderboard();
+      } else if (lastMessage.type === "quiz_ended") {
+        setQuizEnded(true);
       }
     }
   }, [lastMessage, refetchLeaderboard]);
@@ -152,13 +155,102 @@ export default function LiveQuiz() {
     }
   }, [user]);
 
+  // Quiz ended state
+  if (quizEnded || quiz?.status === "completed") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center">
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardContent className="p-12 text-center">
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+                <Trophy className="h-10 w-10 text-green-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
+              <p className="text-lg text-gray-600 mb-6">
+                Thank you for participating in "{quiz?.title || 'the quiz'}"
+              </p>
+            </div>
+            
+            {myLeaderboardEntry && (
+              <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-6 mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Final Results</h3>
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <p className="text-2xl font-bold text-primary-600">{myLeaderboardEntry.totalScore}</p>
+                    <p className="text-sm text-gray-600">Total Score</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-warning-700">#{myLeaderboardEntry.rank}</p>
+                    <p className="text-sm text-gray-600">Final Rank</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <Button 
+              onClick={() => setLocation("/dashboard")}
+              size="lg"
+              className="w-full"
+            >
+              <Home className="h-5 w-5 mr-2" />
+              Return to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Waiting for quiz to start or question to be revealed
   if (!quiz || !currentQuestion) {
+    const isQuizActive = quiz?.status === "active";
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center">
-            <h2 className="text-xl font-semibold mb-4">Waiting for Quiz to Start</h2>
-            <p className="text-gray-600">The quiz admin will reveal questions when ready.</p>
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardContent className="p-12 text-center">
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-primary-100 rounded-full mb-4">
+                {isQuizActive ? (
+                  <Clock className="h-10 w-10 text-primary-600 animate-pulse" />
+                ) : (
+                  <Brain className="h-10 w-10 text-primary-600" />
+                )}
+              </div>
+              
+              {isQuizActive ? (
+                <>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Get Ready!</h2>
+                  <p className="text-lg text-gray-600 mb-4">
+                    Quiz "{quiz.title}" is active. Waiting for admin to reveal the next question.
+                  </p>
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span>Quiz is live - Question coming soon...</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Waiting for Quiz to Start</h2>
+                  <p className="text-lg text-gray-600 mb-4">
+                    {quiz ? `"${quiz.title}" hasn't started yet.` : "Loading quiz details..."}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    The quiz admin will start the quiz when ready.
+                  </p>
+                </>
+              )}
+            </div>
+            
+            <div className="flex justify-center space-x-3">
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/dashboard")}
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
