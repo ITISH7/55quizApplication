@@ -528,11 +528,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/session", requireAuth, async (req: any, res) => {
     try {
       const { quizId } = req.query;
+      console.log('Getting user session for:', req.user.email, 'Quiz:', quizId);
+      
       if (!quizId) {
         return res.status(400).json({ error: "Quiz ID is required" });
       }
       
       const session = await storage.getUserQuizSession(req.user.id, quizId);
+      console.log('Session lookup result:', session ? `Session ID: ${session.id}` : 'No session found');
+      
       if (!session) {
         return res.status(404).json({ error: "No active session found for this quiz" });
       }

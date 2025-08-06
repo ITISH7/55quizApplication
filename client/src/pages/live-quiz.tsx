@@ -199,12 +199,52 @@ export default function LiveQuiz() {
       console.log('Session error:', sessionError);
       // Show user-friendly error message if no session found
       toast({
-        title: "Session Error",
-        description: "Unable to find your quiz session. Please rejoin the quiz.",
+        title: "Session Not Found",
+        description: "You need to join the quiz first. Redirecting to dashboard...",
         variant: "destructive"
       });
+      // Redirect to dashboard after 3 seconds
+      setTimeout(() => {
+        setLocation("/dashboard");
+      }, 3000);
     }
-  }, [sessionData, sessionError]);
+  }, [sessionData, sessionError, setLocation]);
+
+  // Show error state if no session is found
+  if (sessionError && !userSession) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardContent className="p-12 text-center">
+            <div className="mb-6">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
+                <AlertCircle className="h-10 w-10 text-red-600" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Session Not Found</h2>
+              <p className="text-lg text-gray-600 mb-6">
+                You need to join the quiz first from your dashboard.
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <Button
+                onClick={() => setLocation("/dashboard")}
+                size="lg"
+                className="w-full"
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Go to Dashboard
+              </Button>
+              
+              <p className="text-sm text-gray-500">
+                From your dashboard, enter the quiz passkey and click "Join Quiz" to participate.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
