@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { Leaderboard } from "@/components/leaderboard";
-import { Check, SkipForward, Users, Trophy, LogOut, AlertCircle, Clock, Brain, Home } from "lucide-react";
+import { Check, SkipForward, Users, Trophy, LogOut, AlertCircle, Clock, Brain, Home, HelpCircle } from "lucide-react";
 
 export default function LiveQuiz() {
   const [, setLocation] = useLocation();
@@ -210,19 +210,34 @@ export default function LiveQuiz() {
     }
   }, [sessionData, sessionError, setLocation]);
 
-  // Show error state if no session is found
+  // Show loading state while checking session
+  if (!sessionData && !sessionError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
+        <Card className="w-full max-w-lg shadow-xl">
+          <CardContent className="p-12 text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-6"></div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Quiz Session...</h2>
+            <p className="text-gray-600">Please wait while we connect you to the quiz.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Show error state if no session is found - but allow retry
   if (sessionError && !userSession) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-red-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center">
         <Card className="w-full max-w-lg shadow-xl">
           <CardContent className="p-12 text-center">
             <div className="mb-6">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
-                <AlertCircle className="h-10 w-10 text-red-600" />
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
+                <HelpCircle className="h-10 w-10 text-yellow-600" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">Session Not Found</h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Join Quiz First</h2>
               <p className="text-lg text-gray-600 mb-6">
-                You need to join the quiz first from your dashboard.
+                You need to join this quiz from your dashboard using the correct passkey.
               </p>
             </div>
             
@@ -236,9 +251,15 @@ export default function LiveQuiz() {
                 Go to Dashboard
               </Button>
               
-              <p className="text-sm text-gray-500">
-                From your dashboard, enter the quiz passkey and click "Join Quiz" to participate.
-              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800 font-medium mb-2">How to join:</p>
+                <ol className="text-sm text-blue-700 text-left space-y-1">
+                  <li>1. Go to your dashboard</li>
+                  <li>2. Find the quiz you want to join</li>
+                  <li>3. Enter the passkey provided by your admin</li>
+                  <li>4. Click "Join Quiz"</li>
+                </ol>
+              </div>
             </div>
           </CardContent>
         </Card>
