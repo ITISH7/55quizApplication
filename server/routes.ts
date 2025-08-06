@@ -484,7 +484,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isCorrect,
         points,
         answerOrder,
-        timeToAnswer: answerTime
+        timeToAnswer: answerTime || 0 // Ensure timeToAnswer is never undefined
       });
 
       // Update session score

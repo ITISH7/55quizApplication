@@ -73,10 +73,10 @@ const answerSchema = new mongoose.Schema({
   _id: String,
   sessionId: { type: String, required: true },
   questionId: { type: String, required: true },
-  selectedAnswer: { type: String, required: true },
+  selectedAnswer: { type: String, required: false, default: null }, // Allow null for skipped/timeout questions
   isCorrect: { type: Boolean, required: true },
-  points: { type: Number, required: true },
-  timeToAnswer: { type: Number, required: true },
+  points: { type: Number, required: true, default: 0 },
+  timeToAnswer: { type: Number, required: false, default: 0 }, // Allow 0 for timeout
   answerOrder: Number,
   submittedAt: { type: Date, default: Date.now }
 });
@@ -99,7 +99,11 @@ if (mongoose.models.QuizSession) {
   delete mongoose.models.QuizSession;
 }
 const QuizSessionModel = mongoose.model('QuizSession', quizSessionSchema);
-const AnswerModel = mongoose.models.Answer || mongoose.model('Answer', answerSchema);
+// Force delete and recreate Answer model to clear schema cache
+if (mongoose.models.Answer) {
+  delete mongoose.models.Answer;
+}
+const AnswerModel = mongoose.model('Answer', answerSchema);
 const OtpModel = mongoose.models.OTP || mongoose.model('OTP', otpSchema);
 
 export class MongoStorage implements IStorage {

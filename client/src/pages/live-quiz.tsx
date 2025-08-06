@@ -123,6 +123,11 @@ export default function LiveQuiz() {
         setIsAnswerSubmitted(wasAnswered);
         setQuestionStartTime(Date.now());
         setTimeRemaining(lastMessage.question?.timeLimit || 45);
+        
+        // If this is a new question, ensure timer starts properly
+        if (lastMessage.question && lastMessage.question.id !== currentQuestion?.id) {
+          setQuestionStartTime(Date.now());
+        }
       } else if (lastMessage.type === "answer_submitted") {
         refetchLeaderboard();
       } else if (lastMessage.type === "quiz_ended") {
@@ -150,13 +155,23 @@ export default function LiveQuiz() {
       setIsAnswerSubmitted(true);
       setSubmittedQuestions(prev => new Set([...Array.from(prev), variables.questionId]));
       refetchLeaderboard();
-      toast({
-        title: data.isCorrect ? "Correct!" : "Incorrect",
-        description: data.isCorrect 
-          ? `You earned ${data.points} points!` 
-          : "Better luck next time!",
-        variant: data.isCorrect ? "default" : "destructive"
-      });
+      
+      // Handle different answer scenarios
+      if (variables.selectedAnswer === null) {
+        toast({
+          title: "Time's Up!",
+          description: "No answer was submitted for this question.",
+          variant: "default"
+        });
+      } else {
+        toast({
+          title: data.isCorrect ? "Correct!" : "Incorrect",
+          description: data.isCorrect 
+            ? `You earned ${data.points} points!` 
+            : "Better luck next time!",
+          variant: data.isCorrect ? "default" : "destructive"
+        });
+      }
     },
     onError: (error: any) => {
       console.error('Submit answer error details:', error);
@@ -172,8 +187,8 @@ export default function LiveQuiz() {
   });
 
   const handleSubmitAnswer = () => {
-    if (!userSession || !currentQuestion) {
-      console.error('Cannot submit: missing session or question', { userSession, currentQuestion });
+    if (!userSession || !displayQuestion) {
+      console.error('Cannot submit: missing session or question', { userSession, displayQuestion });
       toast({
         title: "Unable to Submit",
         description: "Session not found. Please rejoin the quiz.",
@@ -184,21 +199,21 @@ export default function LiveQuiz() {
     
     // Convert frontend option format (A,B,C,D) to backend format (Option A, Option B, etc)
     const backendAnswer = selectedAnswer ? `Option ${selectedAnswer}` : null;
-    console.log('Submitting answer:', { sessionId: userSession.id, questionId: currentQuestion.id, selectedAnswer, backendAnswer });
+    console.log('Submitting answer:', { sessionId: userSession.id, questionId: displayQuestion.id, selectedAnswer, backendAnswer });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
-      questionId: currentQuestion.id,
+      questionId: displayQuestion.id,
       selectedAnswer: backendAnswer
     });
   };
 
   const handleSkipQuestion = () => {
-    if (!userSession || !currentQuestion) return;
+    if (!userSession || !displayQuestion) return;
     
-    console.log('Skipping question:', { sessionId: userSession.id, questionId: currentQuestion.id });
+    console.log('Skipping question:', { sessionId: userSession.id, questionId: displayQuestion.id });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
-      questionId: currentQuestion.id,
+      questionId: displayQuestion.id,
       selectedAnswer: null
     });
   };

@@ -25,6 +25,9 @@ Live Quiz Showdown is a comprehensive real-time quiz platform designed for corpo
 - ✅ **WebSocket Authentication**: Fixed WebSocket connection errors with proper token validation 
 - ✅ **Submit Button Functionality**: Confirmed working once proper session flow is established
 - ✅ **Complete Join Flow**: Backend successfully creates sessions, frontend needs proper authentication token usage
+- ✅ **Timeout Answer Submission Fix**: Resolved 500 error when time runs out and no answer is selected - now properly handles null answers
+- ✅ **Question Reveal Functionality**: Confirmed working - questions are revealed and visible to candidates through API fallback
+- ✅ **MongoDB Schema Update**: Fixed answer validation to allow null selectedAnswer and 0 timeToAnswer for timeout scenarios
 
 ### Architecture Status
 - **Database**: MongoDB Atlas fully integrated and operational
