@@ -56,6 +56,7 @@ export const answers = pgTable("answers", {
   selectedAnswer: text("selected_answer"), // null if skipped
   isCorrect: boolean("is_correct").default(false).notNull(),
   points: integer("points").default(0).notNull(),
+  timeToAnswer: integer("time_to_answer").notNull(), // Time taken to answer in seconds
   answerOrder: integer("answer_order"), // 1st, 2nd, 3rd correct answer
   submittedAt: timestamp("submitted_at").defaultNow().notNull(),
 });

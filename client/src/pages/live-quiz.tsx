@@ -182,17 +182,20 @@ export default function LiveQuiz() {
       return;
     }
     
-    console.log('Submitting answer:', { sessionId: userSession.id, questionId: currentQuestion.id, selectedAnswer });
+    // Convert frontend option format (A,B,C,D) to backend format (Option A, Option B, etc)
+    const backendAnswer = selectedAnswer ? `Option ${selectedAnswer}` : null;
+    console.log('Submitting answer:', { sessionId: userSession.id, questionId: currentQuestion.id, selectedAnswer, backendAnswer });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
       questionId: currentQuestion.id,
-      selectedAnswer
+      selectedAnswer: backendAnswer
     });
   };
 
   const handleSkipQuestion = () => {
     if (!userSession || !currentQuestion) return;
     
+    console.log('Skipping question:', { sessionId: userSession.id, questionId: currentQuestion.id });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
       questionId: currentQuestion.id,
@@ -591,6 +594,8 @@ export default function LiveQuiz() {
               {currentQuestion.options.map((option: string, index: number) => {
                 const optionLetter = String.fromCharCode(65 + index);
                 const isSelected = selectedAnswer === optionLetter;
+                // Convert frontend option (A,B,C,D) to backend format (Option A, Option B, etc)
+                const backendOptionFormat = `Option ${optionLetter}`;
                 
                 return (
                   <button

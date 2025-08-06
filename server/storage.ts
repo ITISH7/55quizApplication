@@ -51,7 +51,7 @@ export interface IStorage {
   getActiveSessionsForQuiz(quizId: string): Promise<SessionWithAnswers[]>;
 
   // Answer operations
-  createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; answerOrder?: number }): Promise<Answer>;
+  createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; timeToAnswer: number; answerOrder?: number }): Promise<Answer>;
   getSessionAnswers(sessionId: string): Promise<Answer[]>;
   getQuestionAnswerCount(questionId: string): Promise<number>;
 
@@ -283,7 +283,7 @@ export class MemStorage implements IStorage {
     });
   }
 
-  async createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; answerOrder?: number }): Promise<Answer> {
+  async createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; timeToAnswer: number; answerOrder?: number }): Promise<Answer> {
     const id = randomUUID();
     const newAnswer: Answer = {
       ...answer,
