@@ -553,53 +553,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket setup
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
-  wss.on('connection', (ws: WebSocket, req) => {
-    const url = new URL(req.url!, `http://${req.headers.host}`);
-    const token = url.searchParams.get('token');
-    const quizId = url.searchParams.get('quizId');
+  wss.on('connection', async (ws: WebSocket, req) => {
+    try {
+      const url = new URL(req.url!, `http://${req.headers.host}`);
+      const token = url.searchParams.get('token');
+      const quizId = url.searchParams.get('quizId');
 
-    if (!token) {
-      ws.close(1008, 'No token provided');
-      return;
-    }
+      console.log('WebSocket connection attempt:', { token: token ? 'present' : 'missing', quizId });
 
-    // Store connection
-    connections.set(token, ws);
-
-    // Join quiz room if specified
-    if (quizId) {
-      if (!quizRooms.has(quizId)) {
-        quizRooms.set(quizId, new Set());
+      if (!token) {
+        console.log('WebSocket: No token provided');
+        ws.close(1008, 'No token provided');
+        return;
       }
-      quizRooms.get(quizId)!.add(token);
-    }
 
-    ws.on('message', async (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        
-        // Handle different message types
-        switch (data.type) {
-          case 'ping':
-            ws.send(JSON.stringify({ type: 'pong' }));
-            break;
+      // Validate token
+      const user = await storage.getUser(token);
+      if (!user) {
+        console.log('WebSocket: Invalid token');
+        ws.close(1008, 'Invalid token');
+        return;
+      }
+
+      console.log('WebSocket: User authenticated:', user.email);
+
+      // Store connection
+      connections.set(token, ws);
+
+      // Join quiz room if specified
+      if (quizId) {
+        if (!quizRooms.has(quizId)) {
+          quizRooms.set(quizId, new Set());
         }
-      } catch (error) {
-        console.error('WebSocket message error:', error);
+        quizRooms.get(quizId)!.add(token);
+        console.log(`User ${user.email} joined quiz room ${quizId}`);
       }
-    });
 
-    ws.on('close', () => {
-      connections.delete(token);
-      
-      // Remove from quiz rooms
-      quizRooms.forEach((users, roomId) => {
-        users.delete(token);
-        if (users.size === 0) {
-          quizRooms.delete(roomId);
+      ws.on('message', async (message) => {
+        try {
+          const data = JSON.parse(message.toString());
+          
+          // Handle different message types
+          switch (data.type) {
+            case 'ping':
+              ws.send(JSON.stringify({ type: 'pong' }));
+              break;
+          }
+        } catch (error) {
+          console.error('WebSocket message error:', error);
         }
       });
-    });
+
+      ws.on('close', () => {
+        console.log(`WebSocket disconnected for user: ${user.email}`);
+        connections.delete(token);
+        
+        // Remove from quiz rooms
+        quizRooms.forEach((users, roomId) => {
+          users.delete(token);
+          if (users.size === 0) {
+            quizRooms.delete(roomId);
+          }
+        });
+      });
+
+      // Send welcome message
+      ws.send(JSON.stringify({ 
+        type: 'connected', 
+        message: 'WebSocket connected successfully',
+        user: user.email 
+      }));
+
+    } catch (error) {
+      console.error('WebSocket connection error:', error);
+      ws.close(1011, 'Internal server error');
+    }
   });
 
   function broadcastToQuiz(quizId: string, message: any) {
