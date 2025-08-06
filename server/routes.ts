@@ -195,13 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Either Excel file or manual questions are required" });
       }
 
-      // Broadcast new quiz creation to all connected clients
-      broadcastToAll({
-        type: "quiz_created",
-        quiz: quiz
-      });
-
-      res.json({ quiz, message: "Quiz created successfully" });
+      res.json({ quiz });
     } catch (error) {
       console.error('Quiz creation error:', error);
       res.status(500).json({ error: "Failed to create quiz" });
@@ -289,14 +283,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.updateQuizStatus(req.params.id, "active", new Date());
       
-      // Broadcast quiz start to quiz room and all connected clients
+      // Broadcast quiz start to all connected clients
       broadcastToQuiz(req.params.id, {
-        type: "quiz_started",
-        quizId: req.params.id
-      });
-      
-      // Also broadcast to all connections for dashboard updates
-      broadcastToAll({
         type: "quiz_started",
         quizId: req.params.id
       });
@@ -368,14 +356,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.updateQuizStatus(req.params.id, "completed", new Date());
       
-      // Broadcast quiz end to quiz room and all connected clients
+      // Broadcast quiz end to all connected clients
       broadcastToQuiz(req.params.id, {
-        type: "quiz_ended",
-        quizId: req.params.id
-      });
-      
-      // Also broadcast to all connections for dashboard updates
-      broadcastToAll({
         type: "quiz_ended",
         quizId: req.params.id
       });
@@ -501,7 +483,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedAnswer: selectedAnswer || null,
         isCorrect,
         points,
-        answerOrder
+        answerOrder,
+        timeToAnswer: answerTime
       });
 
       // Update session score
@@ -668,29 +651,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   function broadcastToQuiz(quizId: string, message: any) {
     const room = quizRooms.get(quizId);
-    console.log(`Broadcasting to quiz ${quizId}:`, message, `Room has ${room ? room.size : 0} users`);
     if (room) {
       room.forEach((token) => {
         const ws = connections.get(token);
         if (ws && ws.readyState === WebSocket.OPEN) {
-          console.log(`Sending message to user with token ${token.substring(0, 10)}...`);
           ws.send(JSON.stringify(message));
-        } else {
-          console.log(`WebSocket not ready for token ${token.substring(0, 10)}...`);
         }
       });
     }
-  }
-
-  // Also broadcast to ALL connections for user dashboard updates
-  function broadcastToAll(message: any) {
-    console.log(`Broadcasting to all connections:`, message, `Total connections: ${connections.size}`);
-    connections.forEach((ws, token) => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        console.log(`Sending message to user with token ${token.substring(0, 10)}...`);
-        ws.send(JSON.stringify(message));
-      }
-    });
   }
 
   return httpServer;

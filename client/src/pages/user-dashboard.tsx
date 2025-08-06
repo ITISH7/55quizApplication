@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
-import { useWebSocket } from "@/hooks/use-websocket";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,6 @@ export default function UserDashboard() {
   const queryClient = useQueryClient();
   
   const [passkeys, setPasskeys] = useState<Record<string, string>>({});
-  
-  // WebSocket connection for real-time updates
-  const { lastMessage } = useWebSocket(token);
 
   // Redirect if not logged in or is admin using useEffect
   useEffect(() => {
@@ -31,7 +27,7 @@ export default function UserDashboard() {
     }
   }, [user, setLocation]);
 
-  const { data: quizzesData, refetch: refetchQuizzes } = useQuery({
+  const { data: quizzesData } = useQuery({
     queryKey: ["/api/quizzes"],
     queryFn: async () => {
       const response = await fetch("/api/quizzes", {
@@ -42,36 +38,6 @@ export default function UserDashboard() {
     },
     enabled: !!user && !user.isAdmin // Only run query when we have a valid non-admin user
   });
-
-  // Handle real-time WebSocket updates
-  useEffect(() => {
-    if (lastMessage) {
-      console.log('UserDashboard received WebSocket message:', lastMessage);
-      
-      if (lastMessage.type === "quiz_started") {
-        console.log('Quiz started, refreshing quiz list...');
-        refetchQuizzes();
-        toast({
-          title: "Quiz Started!",
-          description: `Quiz "${lastMessage.quizId}" has started. Check for updates!`,
-        });
-      } else if (lastMessage.type === "quiz_ended") {
-        console.log('Quiz ended, refreshing quiz list...');
-        refetchQuizzes();
-        toast({
-          title: "Quiz Ended",
-          description: `A quiz has been completed.`,
-        });
-      } else if (lastMessage.type === "quiz_created") {
-        console.log('New quiz created, refreshing quiz list...');
-        refetchQuizzes();
-        toast({
-          title: "New Quiz Available!",
-          description: `Quiz "${lastMessage.quiz?.title}" has been created.`,
-        });
-      }
-    }
-  }, [lastMessage, refetchQuizzes, toast]);
 
   // Don't render anything if redirecting
   if (!user || user.isAdmin) {
