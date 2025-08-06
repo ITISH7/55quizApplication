@@ -784,7 +784,7 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setLocation(`/quiz/${quiz.id}/results`)}
+                          onClick={() => setLocation(`/admin/quiz/${quiz.id}/results`)}
                         >
                           <BarChart3 className="h-3 w-3 mr-1" />
                           Results

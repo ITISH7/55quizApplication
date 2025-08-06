@@ -253,6 +253,13 @@ export default function QuizControl() {
                 <p className="text-xl font-bold text-primary-600">{activeParticipants}</p>
               </div>
               <Button 
+                variant="outline"
+                onClick={() => setLocation(`/admin/quiz/${quizId}/results`)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                View Results
+              </Button>
+              <Button 
                 variant="destructive"
                 onClick={handleEndQuiz}
                 disabled={endQuizMutation.isPending}

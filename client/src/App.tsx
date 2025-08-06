@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import Login from "@/pages/login";
 import AdminDashboard from "@/pages/admin-dashboard";
 import QuizControl from "@/pages/quiz-control";
+import AdminQuizResults from "@/pages/admin-quiz-results";
 import UserDashboard from "@/pages/user-dashboard";
 import LiveQuiz from "@/pages/live-quiz";
 import FinalResults from "@/pages/final-results";
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/quiz/:id/control" component={QuizControl} />
+      <Route path="/admin/quiz/:id/results" component={AdminQuizResults} />
       <Route path="/dashboard" component={UserDashboard} />
       <Route path="/quiz/:id" component={LiveQuiz} />
       <Route path="/quiz/:id/results" component={FinalResults} />
