@@ -174,42 +174,54 @@ export default function LiveQuiz() {
   const myLeaderboardEntry = leaderboard.find((entry: any) => entry.userId === user.id);
 
   // Get user session from API call when joining quiz
-  const { data: sessionData, error: sessionError } = useQuery({
+  const { data: sessionData, error: sessionError, refetch: refetchSession } = useQuery({
     queryKey: ["/api/user/session", quizId],
     queryFn: async () => {
-      console.log('Fetching session for quiz:', quizId, 'User:', user?.email, 'Token:', token);
+      console.log('🔍 Fetching session for quiz:', quizId, 'User:', user?.email, 'Token present:', !!token);
       const url = `/api/user/session?quizId=${quizId}`;
-      console.log('Full request URL:', url);
       
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('Response status:', response.status);
+      console.log('📡 Response status:', response.status);
       
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('Session fetch FAILED:', response.status, errorData);
+        console.log('❌ Session fetch FAILED:', response.status, errorData);
         throw new Error(errorData.error || "Failed to fetch session");
       }
       
       const data = await response.json();
-      console.log('Session fetch SUCCESS:', data);
+      console.log('✅ Session fetch SUCCESS:', data);
       return data;
     },
     enabled: !!quizId && !!token,
-    retry: 3, // Retry up to 3 times for timing issues
-    retryDelay: 1000 // Wait 1 second between retries
+    retry: false, // Don't retry - if it fails, show error immediately
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0 // Always fetch fresh data
   });
 
   useEffect(() => {
+    console.log('🔄 Session effect triggered - sessionData:', !!sessionData, 'sessionError:', !!sessionError);
+    
     if (sessionData?.session) {
-      console.log('✅ Session data retrieved successfully:', sessionData.session);
+      console.log('✅ SUCCESS: Session data retrieved successfully:', sessionData.session);
       setUserSession({ id: sessionData.session.id });
+      
+      // Clear any existing error toasts
+      toast({
+        title: "Quiz Session Found!",
+        description: "Welcome to the live quiz!",
+        variant: "default"
+      });
+      
     } else if (sessionError) {
-      console.log('❌ Session error occurred:', sessionError);
-      console.log('Current user token:', token);
-      console.log('Current user info:', user);
+      console.log('❌ ERROR: Session error occurred:', sessionError.message);
+      console.log('🔍 Debug info - Token:', token?.substring(0, 20) + '...');
+      console.log('🔍 Debug info - User:', user?.email);
+      console.log('🔍 Debug info - Quiz ID:', quizId);
       
       // Show user-friendly error message if no session found
       toast({
@@ -222,7 +234,7 @@ export default function LiveQuiz() {
         setLocation("/dashboard");
       }, 3000);
     }
-  }, [sessionData, sessionError, setLocation, token, user]);
+  }, [sessionData, sessionError, setLocation, token, user, quizId, toast]);
 
   // Show loading state while checking session
   if (!sessionData && !sessionError) {
@@ -233,6 +245,19 @@ export default function LiveQuiz() {
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-6"></div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Quiz Session...</h2>
             <p className="text-gray-600">Please wait while we connect you to the quiz.</p>
+            <div className="mt-4 text-xs text-gray-500">
+              <p>Quiz: {quizId}</p>
+              <p>User: {user?.email}</p>
+              <p>Token: {token ? 'Present' : 'Missing'}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => refetchSession()}
+                className="mt-2"
+              >
+                Retry Connection
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

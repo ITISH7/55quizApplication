@@ -54,16 +54,20 @@ export default function UserDashboard() {
     },
     onSuccess: (data, variables) => {
       console.log('Join quiz successful:', data);
+      
+      // Invalidate and refetch session cache to force fresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/user/session'] });
+      queryClient.removeQueries({ queryKey: ['/api/user/session'] });
+      
       toast({
         title: "Success!",
         description: "Joined quiz successfully. Redirecting...",
         variant: "default"
       });
-      // Small delay to ensure session is persisted before redirect
-      setTimeout(() => {
-        console.log('Redirecting to quiz page with session ID:', data.session?.id);
-        setLocation(`/quiz/${variables.quizId}`);
-      }, 1500);
+      
+      // Redirect immediately since backend confirms success
+      console.log('Redirecting to quiz page with session ID:', data.session?.id);
+      setLocation(`/quiz/${variables.quizId}`);
     },
     onError: (error: any) => {
       console.error('Join quiz error details:', error);
