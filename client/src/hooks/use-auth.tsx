@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext } from "react";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 
 interface User {

@@ -317,7 +317,10 @@ export default function AdminDashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-sm text-gray-600">{user.email}</span>
-              <Button variant="ghost" size="sm" onClick={logout}>
+              <Button variant="ghost" size="sm" onClick={() => {
+                logout();
+                setLocation("/login");
+              }}>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>

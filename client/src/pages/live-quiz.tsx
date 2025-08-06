@@ -201,8 +201,9 @@ export default function LiveQuiz() {
   };
 
   const handleExitQuiz = () => {
-    if (confirm("Are you sure you want to exit the quiz? Your progress will be saved.")) {
-      setLocation("/dashboard");
+    if (confirm("Are you sure you want to logout? Your progress will be saved.")) {
+      logout();
+      setLocation("/login");
     }
   };
 
@@ -542,7 +543,7 @@ export default function LiveQuiz() {
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
                 <LogOut className="h-4 w-4 mr-1" />
-                Exit Quiz
+                Logout
               </Button>
             </div>
           </div>
