@@ -195,7 +195,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Either Excel file or manual questions are required" });
       }
 
-      res.json({ quiz });
+      // Broadcast new quiz creation to all connected clients
+      broadcastToAll({
+        type: "quiz_created",
+        quiz: quiz
+      });
+
+      res.json({ quiz, message: "Quiz created successfully" });
     } catch (error) {
       console.error('Quiz creation error:', error);
       res.status(500).json({ error: "Failed to create quiz" });

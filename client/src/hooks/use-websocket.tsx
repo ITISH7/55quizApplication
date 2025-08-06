@@ -29,6 +29,8 @@ export function useWebSocket(token: string | null, quizId?: string) {
       ws.on('quiz_ended', (data) => setLastMessage(data)),
       ws.on('question_ended', (data) => setLastMessage(data)),
       ws.on('question_skipped', (data) => setLastMessage(data)),
+      ws.on('quiz_created', (data) => setLastMessage(data)),
+      ws.on('connected', (data) => setLastMessage(data)),
       ws.on('pong', (data) => setLastMessage(data)),
     ];
 

@@ -62,6 +62,13 @@ export default function UserDashboard() {
           title: "Quiz Ended",
           description: `A quiz has been completed.`,
         });
+      } else if (lastMessage.type === "quiz_created") {
+        console.log('New quiz created, refreshing quiz list...');
+        refetchQuizzes();
+        toast({
+          title: "New Quiz Available!",
+          description: `Quiz "${lastMessage.quiz?.title}" has been created.`,
+        });
       }
     }
   }, [lastMessage, refetchQuizzes, toast]);
