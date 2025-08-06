@@ -528,19 +528,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/user/session", requireAuth, async (req: any, res) => {
     try {
       const { quizId } = req.query;
-      console.log('Getting user session for:', req.user.email, 'Quiz:', quizId);
+      console.log('=== GET SESSION REQUEST ===');
+      console.log('User:', req.user.email, 'User ID:', req.user.id);
+      console.log('Quiz ID:', quizId);
+      console.log('Timestamp:', new Date().toISOString());
       
       if (!quizId) {
         return res.status(400).json({ error: "Quiz ID is required" });
       }
       
       const session = await storage.getUserQuizSession(req.user.id, quizId);
-      console.log('Session lookup result:', session ? `Session ID: ${session.id}` : 'No session found');
+      console.log('Session lookup result:', session ? `Session ID: ${session.id}, Quiz: ${session.quizId}, User: ${session.userId}` : 'No session found');
       
       if (!session) {
+        console.log('=== SESSION NOT FOUND - DEBUGGING ===');
+        // Let's check all sessions for this user to debug
+        const allUserSessions = await storage.getAllUserSessions(req.user.id);
+        console.log('All user sessions:', allUserSessions?.length || 0, 'sessions found');
+        if (allUserSessions && allUserSessions.length > 0) {
+          allUserSessions.forEach((s: any, i: number) => {
+            console.log(`Session ${i + 1}:`, { id: s.id, quizId: s.quizId, joinedAt: s.joinedAt });
+          });
+        }
         return res.status(404).json({ error: "No active session found for this quiz" });
       }
       
+      console.log('=== SESSION FOUND - SUCCESS ===');
       res.json({ session });
     } catch (error) {
       console.error('Get session error:', error);

@@ -59,10 +59,11 @@ export default function UserDashboard() {
         description: "Joined quiz successfully. Redirecting...",
         variant: "default"
       });
-      // Small delay to show success message
+      // Small delay to ensure session is persisted before redirect
       setTimeout(() => {
+        console.log('Redirecting to quiz page with session ID:', data.session?.id);
         setLocation(`/quiz/${variables.quizId}`);
-      }, 1000);
+      }, 1500);
     },
     onError: (error: any) => {
       console.error('Join quiz error details:', error);

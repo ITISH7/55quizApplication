@@ -315,6 +315,12 @@ export class MongoStorage implements IStorage {
     return session ? this.mongoToQuizSession(session) : undefined;
   }
 
+  async getAllUserSessions(userId: string): Promise<QuizSession[]> {
+    await this.ensureConnection();
+    const sessions = await QuizSessionModel.find({ userId }).sort({ joinedAt: -1 });
+    return sessions.map(s => this.mongoToQuizSession(s));
+  }
+
   async updateSessionScore(sessionId: string, score: number): Promise<void> {
     await this.ensureConnection();
     await QuizSessionModel.findByIdAndUpdate(sessionId, { score });

@@ -177,6 +177,7 @@ export default function LiveQuiz() {
   const { data: sessionData, error: sessionError } = useQuery({
     queryKey: ["/api/user/session", quizId],
     queryFn: async () => {
+      console.log('Fetching session for quiz:', quizId, 'User:', user?.email, 'Token present:', !!token);
       const response = await fetch(`/api/user/session?quizId=${quizId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -185,10 +186,13 @@ export default function LiveQuiz() {
         console.log('Session fetch failed:', response.status, errorData);
         throw new Error(errorData.error || "Failed to fetch session");
       }
-      return response.json();
+      const data = await response.json();
+      console.log('Session fetch SUCCESS:', data);
+      return data;
     },
     enabled: !!quizId && !!token,
-    retry: false
+    retry: 3, // Retry up to 3 times for timing issues
+    retryDelay: 1000 // Wait 1 second between retries
   });
 
   useEffect(() => {
