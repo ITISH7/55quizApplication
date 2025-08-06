@@ -18,15 +18,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const requireAuth = async (req: any, res: any, next: any) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) {
-      console.log('No token provided');
+      console.log('No token provided in request');
       return res.status(401).json({ error: "No token provided" });
     }
 
     try {
       // Simple token format: userId (in production, use proper JWT)
       const user = await storage.getUser(token);
-      console.log('Token validation:', token, 'User:', user ? user.email : 'not found');
+      console.log('Token validation:', token.substring(0, 20) + '...', 'User found:', user ? user.email : 'NOT FOUND');
       if (!user) {
+        console.log('User not found for token, checking if token is email...');
+        // Check if someone is using email as token incorrectly
+        if (token.includes('@fiftyfivetech.io')) {
+          console.log('ERROR: Token appears to be email, not user ID!');
+        }
         return res.status(401).json({ error: "Invalid token" });
       }
       req.user = user;

@@ -177,15 +177,22 @@ export default function LiveQuiz() {
   const { data: sessionData, error: sessionError } = useQuery({
     queryKey: ["/api/user/session", quizId],
     queryFn: async () => {
-      console.log('Fetching session for quiz:', quizId, 'User:', user?.email, 'Token present:', !!token);
-      const response = await fetch(`/api/user/session?quizId=${quizId}`, {
+      console.log('Fetching session for quiz:', quizId, 'User:', user?.email, 'Token:', token);
+      const url = `/api/user/session?quizId=${quizId}`;
+      console.log('Full request URL:', url);
+      
+      const response = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
-        console.log('Session fetch failed:', response.status, errorData);
+        console.log('Session fetch FAILED:', response.status, errorData);
         throw new Error(errorData.error || "Failed to fetch session");
       }
+      
       const data = await response.json();
       console.log('Session fetch SUCCESS:', data);
       return data;
@@ -197,10 +204,13 @@ export default function LiveQuiz() {
 
   useEffect(() => {
     if (sessionData?.session) {
-      console.log('Session data retrieved:', sessionData.session);
+      console.log('✅ Session data retrieved successfully:', sessionData.session);
       setUserSession({ id: sessionData.session.id });
     } else if (sessionError) {
-      console.log('Session error:', sessionError);
+      console.log('❌ Session error occurred:', sessionError);
+      console.log('Current user token:', token);
+      console.log('Current user info:', user);
+      
       // Show user-friendly error message if no session found
       toast({
         title: "Session Not Found",
@@ -212,7 +222,7 @@ export default function LiveQuiz() {
         setLocation("/dashboard");
       }, 3000);
     }
-  }, [sessionData, sessionError, setLocation]);
+  }, [sessionData, sessionError, setLocation, token, user]);
 
   // Show loading state while checking session
   if (!sessionData && !sessionError) {
