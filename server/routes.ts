@@ -517,6 +517,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user's current session
+  app.get("/api/user/session", requireAuth, async (req: any, res) => {
+    try {
+      const { quizId } = req.query;
+      if (!quizId) {
+        return res.status(400).json({ error: "Quiz ID is required" });
+      }
+      
+      const session = await storage.getUserQuizSession(req.user.id, quizId);
+      if (!session) {
+        return res.status(404).json({ error: "No active session found for this quiz" });
+      }
+      
+      res.json({ session });
+    } catch (error) {
+      console.error('Get session error:', error);
+      res.status(500).json({ error: "Failed to fetch session" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket setup

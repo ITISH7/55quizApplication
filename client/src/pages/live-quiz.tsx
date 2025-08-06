@@ -147,13 +147,24 @@ export default function LiveQuiz() {
   const leaderboard = leaderboardData?.leaderboard || [];
   const myLeaderboardEntry = leaderboard.find((entry: any) => entry.userId === user.id);
 
-  // Get user session from local storage or context
+  // Get user session from API call when joining quiz
+  const { data: sessionData } = useQuery({
+    queryKey: ["/api/user/session", quizId],
+    queryFn: async () => {
+      const response = await fetch(`/api/user/session?quizId=${quizId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("Failed to fetch session");
+      return response.json();
+    },
+    enabled: !!quizId && !!token
+  });
+
   useEffect(() => {
-    const sessionId = user.currentSessionId;
-    if (sessionId) {
-      setUserSession({ id: sessionId });
+    if (sessionData?.session) {
+      setUserSession({ id: sessionData.session.id });
     }
-  }, [user]);
+  }, [sessionData]);
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
