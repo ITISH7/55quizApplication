@@ -142,6 +142,17 @@ export default function LiveQuiz() {
     }
   }, [lastMessage, refetchLeaderboard, currentQuestion?.id]);
 
+  // Initialize timer for existing revealed questions (on page load/refresh)
+  useEffect(() => {
+    if (currentRevealedQuestion && !currentQuestion && currentRevealedQuestion.id) {
+      console.log('LiveQuiz: Initializing timer for existing revealed question');
+      const questionTime = currentRevealedQuestion.timeLimit || 45;
+      setQuestionTimeLimit(questionTime);
+      setTimeRemaining(questionTime);
+      setQuestionStartTime(Date.now());
+    }
+  }, [currentRevealedQuestion?.id, currentQuestion]);
+
   const submitAnswerMutation = useMutation({
     mutationFn: async ({ sessionId, questionId, selectedAnswer }: { 
       sessionId: string; 
@@ -445,16 +456,6 @@ export default function LiveQuiz() {
 
   // If no current question from WebSocket, use the latest revealed question from API
   const displayQuestion = currentQuestion || currentRevealedQuestion;
-  
-  // Initialize timer for questions loaded from API (on page refresh)
-  useEffect(() => {
-    if (currentRevealedQuestion && !currentQuestion) {
-      const questionTime = currentRevealedQuestion.timeLimit || 45;
-      setQuestionTimeLimit(questionTime);
-      setTimeRemaining(questionTime);
-      setQuestionStartTime(Date.now());
-    }
-  }, [currentRevealedQuestion, currentQuestion]);
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
