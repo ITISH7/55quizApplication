@@ -156,30 +156,20 @@ export default function QuizControl() {
     }
   };
 
-  const getNextBonusQuestion = () => {
-    // Find any bonus question in the quiz
+  const getNextUnrevealedBonusQuestion = () => {
+    // Find next unrevealed bonus question
     for (let i = 0; i < questions.length; i++) {
-      if (questions[i].isBonus) {
+      if (questions[i].isBonus && !questions[i].isRevealed) {
         return i;
       }
     }
     return null;
   };
 
-  const getNextRegularQuestion = (fromIndex: number) => {
-    // Find the next non-bonus question after fromIndex
-    for (let i = fromIndex + 1; i < questions.length; i++) {
-      if (!questions[i].isBonus) {
-        return i;
-      }
-    }
-    return null;
-  };
-
-  const getPreviousRegularQuestion = (fromIndex: number) => {
-    // Find the previous non-bonus question before fromIndex
-    for (let i = fromIndex - 1; i >= 0; i--) {
-      if (!questions[i].isBonus) {
+  const getNextUnrevealedNormalQuestion = () => {
+    // Find next unrevealed normal (non-bonus) question
+    for (let i = 0; i < questions.length; i++) {
+      if (!questions[i].isBonus && !questions[i].isRevealed) {
         return i;
       }
     }
@@ -187,53 +177,26 @@ export default function QuizControl() {
   };
 
   const handleBonusQuestion = () => {
-    const bonusIndex = getNextBonusQuestion();
+    const bonusIndex = getNextUnrevealedBonusQuestion();
     if (bonusIndex !== null) {
-      // Store current position for return after bonus
-      sessionStorage.setItem('preBonusIndex', currentQuestionIndex.toString());
       setCurrentQuestionIndex(bonusIndex);
       setIsTimerRunning(false);
       toast({
-        title: "Bonus Question Activated",
+        title: "Bonus Question Selected",
         description: `Switched to bonus question ${bonusIndex + 1}`
       });
     }
   };
 
   const handleNextQuestion = () => {
-    // Check if we're returning from a bonus question
-    const preBonusIndex = sessionStorage.getItem('preBonusIndex');
-    if (preBonusIndex && currentQuestion?.isBonus) {
-      // Return to the next regular question after the pre-bonus question
-      const preBonusIndexNum = parseInt(preBonusIndex);
-      const nextRegularIndex = getNextRegularQuestion(preBonusIndexNum);
-      sessionStorage.removeItem('preBonusIndex');
-      
-      if (nextRegularIndex !== null) {
-        setCurrentQuestionIndex(nextRegularIndex);
-        setIsTimerRunning(false);
-        toast({
-          title: "Returned to Regular Questions",
-          description: `Continuing with question ${nextRegularIndex + 1}`
-        });
-        return;
-      }
-    }
-    
-    // Normal next question flow - skip bonus questions
-    const nextRegularIndex = getNextRegularQuestion(currentQuestionIndex);
-    if (nextRegularIndex !== null) {
-      setCurrentQuestionIndex(nextRegularIndex);
+    const nextNormalIndex = getNextUnrevealedNormalQuestion();
+    if (nextNormalIndex !== null) {
+      setCurrentQuestionIndex(nextNormalIndex);
       setIsTimerRunning(false);
-    }
-  };
-
-  const handlePreviousQuestion = () => {
-    // Skip bonus questions and go to previous regular question
-    const prevRegularIndex = getPreviousRegularQuestion(currentQuestionIndex);
-    if (prevRegularIndex !== null) {
-      setCurrentQuestionIndex(prevRegularIndex);
-      setIsTimerRunning(false);
+      toast({
+        title: "Next Question",
+        description: `Moved to question ${nextNormalIndex + 1}`
+      });
     }
   };
 
@@ -321,9 +284,9 @@ export default function QuizControl() {
                     <span className="text-lg font-bold text-primary-600">{currentQuestionIndex + 1}</span>
                     <span className="text-sm text-gray-500">of</span>
                     <span className="text-lg font-bold text-gray-900">{questions.length}</span>
-                    {sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus && (
+                    {currentQuestion?.isBonus && (
                       <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
-                        Bonus Mode
+                        Bonus Question
                       </Badge>
                     )}
                   </div>
@@ -395,36 +358,23 @@ export default function QuizControl() {
                       </Button>
                       
                       <Button 
+                        onClick={handleNextQuestion}
+                        disabled={getNextUnrevealedNormalQuestion() === null}
+                        variant="outline"
+                        className="bg-blue-50 hover:bg-blue-100 border-blue-300 text-blue-800"
+                      >
+                        <ArrowRight className="mr-2 h-4 w-4" />
+                        Next Normal Question
+                      </Button>
+
+                      <Button 
                         variant="outline"
                         onClick={handleBonusQuestion}
-                        disabled={skipQuestionMutation.isPending || getNextBonusQuestion() === null}
+                        disabled={getNextUnrevealedBonusQuestion() === null}
                         className="bg-yellow-50 hover:bg-yellow-100 border-yellow-300 text-yellow-800"
                       >
                         <Gift className="mr-2 h-4 w-4" />
-                        Bonus Question
-                      </Button>
-
-                      <Button 
-                        onClick={handlePreviousQuestion}
-                        disabled={getPreviousRegularQuestion(currentQuestionIndex) === null}
-                        variant="outline"
-                      >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Previous Question
-                      </Button>
-
-                      <Button 
-                        onClick={handleNextQuestion}
-                        disabled={getNextRegularQuestion(currentQuestionIndex) === null && !(sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus)}
-                        variant="outline"
-                        className={sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus 
-                          ? "bg-green-50 hover:bg-green-100 border-green-300 text-green-800" 
-                          : ""}
-                      >
-                        <ArrowRight className="mr-2 h-4 w-4" />
-                        {sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus 
-                          ? "Return to Quiz" 
-                          : "Next Question"}
+                        Show Bonus Question
                       </Button>
                     </div>
                   </>
