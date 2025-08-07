@@ -604,7 +604,7 @@ export default function LiveQuiz() {
         {/* Timer Bar */}
         <div className="mb-8">
           <QuizTimer
-            key={displayQuestion.id} // Force timer reset for new questions
+            key={displayQuestion?.id || 'no-question'} // Force timer reset for new questions
             duration={questionTimeLimit}
             isRunning={!isAnswerSubmitted}
             onComplete={() => {
