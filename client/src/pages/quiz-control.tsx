@@ -157,9 +157,29 @@ export default function QuizControl() {
   };
 
   const getNextBonusQuestion = () => {
-    // Find the next bonus question after current index
-    for (let i = currentQuestionIndex + 1; i < questions.length; i++) {
+    // Find any bonus question in the quiz
+    for (let i = 0; i < questions.length; i++) {
       if (questions[i].isBonus) {
+        return i;
+      }
+    }
+    return null;
+  };
+
+  const getNextRegularQuestion = (fromIndex: number) => {
+    // Find the next non-bonus question after fromIndex
+    for (let i = fromIndex + 1; i < questions.length; i++) {
+      if (!questions[i].isBonus) {
+        return i;
+      }
+    }
+    return null;
+  };
+
+  const getPreviousRegularQuestion = (fromIndex: number) => {
+    // Find the previous non-bonus question before fromIndex
+    for (let i = fromIndex - 1; i >= 0; i--) {
+      if (!questions[i].isBonus) {
         return i;
       }
     }
@@ -184,24 +204,35 @@ export default function QuizControl() {
     // Check if we're returning from a bonus question
     const preBonusIndex = sessionStorage.getItem('preBonusIndex');
     if (preBonusIndex && currentQuestion?.isBonus) {
-      // Return to the question after the pre-bonus question
-      const returnIndex = parseInt(preBonusIndex) + 1;
+      // Return to the next regular question after the pre-bonus question
+      const preBonusIndexNum = parseInt(preBonusIndex);
+      const nextRegularIndex = getNextRegularQuestion(preBonusIndexNum);
       sessionStorage.removeItem('preBonusIndex');
       
-      if (returnIndex < questions.length) {
-        setCurrentQuestionIndex(returnIndex);
+      if (nextRegularIndex !== null) {
+        setCurrentQuestionIndex(nextRegularIndex);
         setIsTimerRunning(false);
         toast({
           title: "Returned to Regular Questions",
-          description: `Continuing with question ${returnIndex + 1}`
+          description: `Continuing with question ${nextRegularIndex + 1}`
         });
         return;
       }
     }
     
-    // Normal next question flow
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    // Normal next question flow - skip bonus questions
+    const nextRegularIndex = getNextRegularQuestion(currentQuestionIndex);
+    if (nextRegularIndex !== null) {
+      setCurrentQuestionIndex(nextRegularIndex);
+      setIsTimerRunning(false);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    // Skip bonus questions and go to previous regular question
+    const prevRegularIndex = getPreviousRegularQuestion(currentQuestionIndex);
+    if (prevRegularIndex !== null) {
+      setCurrentQuestionIndex(prevRegularIndex);
       setIsTimerRunning(false);
     }
   };
@@ -224,7 +255,12 @@ export default function QuizControl() {
 
   if (!quiz) return <div>Loading...</div>;
 
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  // Calculate progress based on regular questions only
+  const regularQuestions = questions.filter(q => !q.isBonus);
+  const currentRegularIndex = regularQuestions.findIndex(q => q.id === currentQuestion?.id);
+  const progress = currentRegularIndex >= 0 
+    ? ((currentRegularIndex + 1) / regularQuestions.length) * 100
+    : ((currentQuestionIndex + 1) / questions.length) * 100;
   const activeParticipants = sessions.length;
 
   return (
@@ -379,8 +415,17 @@ export default function QuizControl() {
                       </Button>
 
                       <Button 
+                        onClick={handlePreviousQuestion}
+                        disabled={getPreviousRegularQuestion(currentQuestionIndex) === null}
+                        variant="outline"
+                      >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Previous Question
+                      </Button>
+
+                      <Button 
                         onClick={handleNextQuestion}
-                        disabled={currentQuestionIndex >= questions.length - 1}
+                        disabled={getNextRegularQuestion(currentQuestionIndex) === null && !(sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus)}
                         variant="outline"
                         className={sessionStorage.getItem('preBonusIndex') && currentQuestion?.isBonus 
                           ? "bg-green-50 hover:bg-green-100 border-green-300 text-green-800" 
