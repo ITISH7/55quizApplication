@@ -256,8 +256,8 @@ export default function QuizControl() {
   if (!quiz) return <div>Loading...</div>;
 
   // Calculate progress based on regular questions only
-  const regularQuestions = questions.filter(q => !q.isBonus);
-  const currentRegularIndex = regularQuestions.findIndex(q => q.id === currentQuestion?.id);
+  const regularQuestions = questions.filter((q: any) => !q.isBonus);
+  const currentRegularIndex = regularQuestions.findIndex((q: any) => q.id === currentQuestion?.id);
   const progress = currentRegularIndex >= 0 
     ? ((currentRegularIndex + 1) / regularQuestions.length) * 100
     : ((currentQuestionIndex + 1) / questions.length) * 100;
