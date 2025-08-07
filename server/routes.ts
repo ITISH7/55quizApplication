@@ -445,35 +445,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const answerCount = await storage.getQuestionAnswerCount(questionId);
         answerOrder = answerCount + 1;
 
-        // Calculate points based on scoring type
-        const quiz = await storage.getQuiz(session.quizId);
-        if (quiz?.scoringType === "speed" && quiz.speedScoringConfig) {
-          // Position-based scoring with custom configuration
-          const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : (quiz.speedScoringConfig as any)?.timeThresholds || [];
-          
-          if (speedConfig.length > 0 && answerOrder <= speedConfig.length) {
-            // Use custom points for this position (1st, 2nd, 3rd, etc.)
-            points = speedConfig[answerOrder - 1]?.points || speedConfig[speedConfig.length - 1]?.points || 5;
-          } else {
-            // Default position-based scoring
+        // Bonus questions are NOT affected by scoring type - always use base points * 2
+        if (question.isBonus) {
+          points = (question.points || 10) * 2;
+        } else {
+          // Regular questions follow the scoring type
+          const quiz = await storage.getQuiz(session.quizId);
+          if (quiz?.scoringType === "speed" && quiz.speedScoringConfig) {
+            // Position-based scoring with custom configuration
+            const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : (quiz.speedScoringConfig as any)?.timeThresholds || [];
+            
+            if (speedConfig.length > 0 && answerOrder <= speedConfig.length) {
+              // Use custom points for this position (1st, 2nd, 3rd, etc.)
+              points = speedConfig[answerOrder - 1]?.points || speedConfig[speedConfig.length - 1]?.points || 5;
+            } else {
+              // Default position-based scoring
+              if (answerOrder === 1) points = 20;
+              else if (answerOrder === 2) points = 15;
+              else if (answerOrder === 3) points = 10;
+              else points = 5;
+            }
+          } else if (quiz?.scoringType === "speed") {
+            // Standard position-based scoring
             if (answerOrder === 1) points = 20;
             else if (answerOrder === 2) points = 15;
             else if (answerOrder === 3) points = 10;
             else points = 5;
-          }
-          
-          // For speed scoring, bonus questions participate in speed scoring without 2x multiplier
-        } else if (quiz?.scoringType === "speed") {
-          // Standard position-based scoring - bonus questions participate normally
-          if (answerOrder === 1) points = 20;
-          else if (answerOrder === 2) points = 15;
-          else if (answerOrder === 3) points = 10;
-          else points = 5;
-        } else {
-          // Non-speed scoring - bonus questions get 2x multiplier
-          points = question.points || 10;
-          if (question.isBonus) {
-            points *= 2;
+          } else {
+            // Standard scoring
+            points = question.points || 10;
           }
         }
       }
