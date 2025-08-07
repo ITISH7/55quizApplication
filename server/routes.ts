@@ -445,9 +445,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const answerCount = await storage.getQuestionAnswerCount(questionId);
         answerOrder = answerCount + 1;
 
-        // Bonus questions are NOT affected by scoring type - always use base points * 2
+        // Bonus questions are NOT affected by scoring type - always use base points
         if (question.isBonus) {
-          points = (question.points || 10) * 2;
+          points = question.points || 10;
         } else {
           // Regular questions follow the scoring type
           const quiz = await storage.getQuiz(session.quizId);
