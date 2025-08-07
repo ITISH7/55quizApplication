@@ -266,6 +266,20 @@ export default function LiveQuiz() {
     gcTime: 0 // Don't cache at all
   });
 
+  // Initialize timer for existing revealed questions (on page load/refresh)
+  useEffect(() => {
+    const revealedQuestions = quizData?.quiz?.questions?.filter((q: any) => q.isRevealed) || [];
+    const currentRevealedQuestion = revealedQuestions[revealedQuestions.length - 1];
+    
+    if (currentRevealedQuestion && !currentQuestion && currentRevealedQuestion.id) {
+      console.log('LiveQuiz: Initializing timer for existing revealed question');
+      const questionTime = currentRevealedQuestion.timeLimit || 45;
+      setQuestionTimeLimit(questionTime);
+      setTimeRemaining(questionTime);
+      setQuestionStartTime(Date.now());
+    }
+  }, [quizData?.quiz?.questions, currentQuestion]);
+
   useEffect(() => {
     console.log('🔄 Session effect triggered - sessionData:', !!sessionData, 'sessionError:', !!sessionError);
     
@@ -447,16 +461,6 @@ export default function LiveQuiz() {
   // If no current question from WebSocket, use the latest revealed question from API
   const displayQuestion = currentQuestion || currentRevealedQuestion;
 
-  // Initialize timer for existing revealed questions (on page load/refresh)
-  useEffect(() => {
-    if (currentRevealedQuestion && !currentQuestion && currentRevealedQuestion.id) {
-      console.log('LiveQuiz: Initializing timer for existing revealed question');
-      const questionTime = currentRevealedQuestion.timeLimit || 45;
-      setQuestionTimeLimit(questionTime);
-      setTimeRemaining(questionTime);
-      setQuestionStartTime(Date.now());
-    }
-  }, [currentRevealedQuestion?.id, currentQuestion]);
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
