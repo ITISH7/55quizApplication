@@ -10,18 +10,32 @@ interface QuizTimerProps {
 
 export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
+  const [hasCompleted, setHasCompleted] = useState(false);
 
   // Reset timer when duration changes (new question)
   useEffect(() => {
+    console.log('Timer: Resetting for new question, duration:', duration);
     setTimeLeft(duration);
+    setHasCompleted(false);
   }, [duration]);
 
+  // Reset timer when isRunning changes from false to true
   useEffect(() => {
-    if (!isRunning || timeLeft <= 0) return;
+    if (isRunning && timeLeft !== duration) {
+      console.log('Timer: Starting timer, resetting timeLeft to duration:', duration);
+      setTimeLeft(duration);
+      setHasCompleted(false);
+    }
+  }, [isRunning, duration]);
+
+  useEffect(() => {
+    if (!isRunning || timeLeft <= 0 || hasCompleted) return;
 
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
+          console.log('Timer: Time up! Calling onComplete');
+          setHasCompleted(true);
           onComplete?.();
           return 0;
         }
@@ -30,7 +44,7 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, onComplete, timeLeft]);
+  }, [isRunning, onComplete, hasCompleted]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;

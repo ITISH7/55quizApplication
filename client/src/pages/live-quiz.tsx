@@ -128,6 +128,7 @@ export default function LiveQuiz() {
         
         // Reset timer state for new questions
         if (isNewQuestion) {
+          console.log('LiveQuiz: New question detected, resetting timer');
           setQuestionStartTime(Date.now());
           const questionTime = lastMessage.question?.timeLimit || 45;
           setTimeRemaining(questionTime);
@@ -603,6 +604,7 @@ export default function LiveQuiz() {
         {/* Timer Bar */}
         <div className="mb-8">
           <QuizTimer
+            key={displayQuestion.id} // Force timer reset for new questions
             duration={questionTimeLimit}
             isRunning={!isAnswerSubmitted}
             onComplete={() => {
