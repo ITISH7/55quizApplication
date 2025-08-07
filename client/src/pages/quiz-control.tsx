@@ -93,19 +93,6 @@ export default function QuizControl() {
     }
   });
 
-  const endQuestionMutation = useMutation({
-    mutationFn: async (questionId: string) => {
-      const response = await apiRequest("POST", `/api/quizzes/${quizId}/questions/${questionId}/end`);
-      return response.json();
-    },
-    onSuccess: () => {
-      setIsTimerRunning(false);
-      toast({
-        title: "Success",
-        description: "Question ended"
-      });
-    }
-  });
 
   const skipQuestionMutation = useMutation({
     mutationFn: async (nextIndex: number) => {
@@ -150,11 +137,6 @@ export default function QuizControl() {
     }
   };
 
-  const handleEndQuestion = () => {
-    if (currentQuestion) {
-      endQuestionMutation.mutate(currentQuestion.id);
-    }
-  };
 
   const getNextUnrevealedBonusQuestion = () => {
     // Find next unrevealed bonus question
@@ -343,15 +325,6 @@ export default function QuizControl() {
                       >
                         <Eye className="mr-2 h-4 w-4" />
                         {currentQuestion.isRevealed ? "Question Revealed" : "Reveal Question"}
-                      </Button>
-                      
-                      <Button 
-                        variant="secondary"
-                        onClick={handleEndQuestion}
-                        disabled={endQuestionMutation.isPending || !currentQuestion.isRevealed}
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        End Question
                       </Button>
                       
                       <Button 

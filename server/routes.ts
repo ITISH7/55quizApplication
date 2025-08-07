@@ -317,21 +317,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // End current question (Admin only)
-  app.post("/api/quizzes/:quizId/questions/:questionId/end", requireAuth, requireAdmin, async (req: any, res) => {
-    try {
-      // Broadcast question end to all participants
-      broadcastToQuiz(req.params.quizId, {
-        type: "question_ended",
-        questionId: req.params.questionId
-      });
-
-      res.json({ message: "Question ended" });
-    } catch (error) {
-      console.error('Error ending question:', error);
-      res.status(500).json({ error: "Failed to end question" });
-    }
-  });
 
   // Skip to next question (Admin only)
   app.post("/api/quizzes/:quizId/skip", requireAuth, requireAdmin, async (req: any, res) => {
