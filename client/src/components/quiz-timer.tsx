@@ -21,12 +21,12 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
 
   // Reset timer when isRunning changes from false to true
   useEffect(() => {
-    if (isRunning && timeLeft !== duration) {
-      console.log('Timer: Starting timer, resetting timeLeft to duration:', duration);
+    if (isRunning && hasCompleted) {
+      console.log('Timer: Starting timer after completion, resetting timeLeft to duration:', duration);
       setTimeLeft(duration);
       setHasCompleted(false);
     }
-  }, [isRunning, duration]);
+  }, [isRunning, duration, hasCompleted]);
 
   useEffect(() => {
     if (!isRunning || timeLeft <= 0 || hasCompleted) return;
