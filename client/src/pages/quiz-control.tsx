@@ -218,12 +218,9 @@ export default function QuizControl() {
 
   if (!quiz) return <div>Loading...</div>;
 
-  // Calculate progress based on regular questions only
-  const regularQuestions = questions.filter((q: any) => !q.isBonus);
-  const currentRegularIndex = regularQuestions.findIndex((q: any) => q.id === currentQuestion?.id);
-  const progress = currentRegularIndex >= 0 
-    ? ((currentRegularIndex + 1) / regularQuestions.length) * 100
-    : ((currentQuestionIndex + 1) / questions.length) * 100;
+  // Calculate progress based on revealed questions
+  const revealedQuestions = questions.filter((q: any) => q.isRevealed);
+  const progress = questions.length > 0 ? (revealedQuestions.length / questions.length) * 100 : 0;
   const activeParticipants = sessions.length;
 
   return (
@@ -295,7 +292,7 @@ export default function QuizControl() {
                 {/* Progress Bar */}
                 <div className="mb-6">
                   <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Quiz Progress</span>
+                    <span>Questions Revealed ({revealedQuestions.length}/{questions.length})</span>
                     <span>{Math.round(progress)}%</span>
                   </div>
                   <Progress value={progress} className="h-2" />
