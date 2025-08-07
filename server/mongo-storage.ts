@@ -357,7 +357,7 @@ export class MongoStorage implements IStorage {
     return sessionsWithAnswers;
   }
 
-  async createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; timeToAnswer?: number; answerOrder?: number }): Promise<Answer> {
+  async createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; answerOrder?: number }): Promise<Answer> {
     await this.ensureConnection();
     const id = randomUUID();
     const newAnswer = await AnswerModel.create({
@@ -375,7 +375,7 @@ export class MongoStorage implements IStorage {
 
   async getQuestionAnswerCount(questionId: string): Promise<number> {
     await this.ensureConnection();
-    return await AnswerModel.countDocuments({ questionId, isCorrect: true });
+    return await AnswerModel.countDocuments({ questionId });
   }
 
   async getQuizLeaderboard(quizId: string): Promise<LeaderboardEntry[]> {

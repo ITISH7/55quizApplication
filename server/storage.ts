@@ -51,7 +51,7 @@ export interface IStorage {
   getActiveSessionsForQuiz(quizId: string): Promise<SessionWithAnswers[]>;
 
   // Answer operations
-  createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; timeToAnswer?: number; answerOrder?: number }): Promise<Answer>;
+  createAnswer(answer: InsertAnswer & { isCorrect: boolean; points: number; timeToAnswer: number; answerOrder?: number }): Promise<Answer>;
   getSessionAnswers(sessionId: string): Promise<Answer[]>;
   getQuestionAnswerCount(questionId: string): Promise<number>;
 
@@ -138,7 +138,6 @@ export class MemStorage implements IStorage {
       id,
       defaultTimePerQuestion: quiz.defaultTimePerQuestion || 45,
       scoringType: quiz.scoringType || "speed",
-      speedScoringConfig: quiz.speedScoringConfig || null,
       status: "draft",
       createdAt: new Date(),
       startedAt: null,
