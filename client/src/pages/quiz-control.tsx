@@ -308,7 +308,6 @@ export default function QuizControl() {
                       <div className="flex items-center space-x-4">
                         <span>Time Limit: <strong>{currentQuestion.timeLimit}s</strong></span>
                         <span>Points: <strong>{currentQuestion.points || 10}</strong></span>
-                        <span className="text-xs text-gray-400">Answer: <strong>{currentQuestion.correctAnswer}</strong></span>
                         {currentQuestion.isBonus && (
                           <Badge variant="outline" className="bg-warning-50 text-warning-700 border-warning-200">
                             Bonus Question
