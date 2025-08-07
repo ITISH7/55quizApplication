@@ -438,7 +438,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Question not found" });
       }
 
-      const isCorrect = selectedAnswer === question.correctAnswer;
+      // Normalize answer formats for comparison
+      // Handle both "A"/"B"/"C"/"D" and "Option A"/"Option B"/"Option C"/"Option D" formats
+      const normalizeAnswer = (answer: string): string => {
+        if (!answer) return '';
+        // If it's already in "Option X" format, extract just the letter
+        if (answer.startsWith('Option ')) {
+          return answer.replace('Option ', '');
+        }
+        // If it's already just the letter, return as is
+        return answer;
+      };
+
+      const normalizedSelected = normalizeAnswer(selectedAnswer);
+      const normalizedCorrect = normalizeAnswer(question.correctAnswer);
+      const isCorrect = normalizedSelected === normalizedCorrect;
       let points = 0;
       let answerOrder;
 
