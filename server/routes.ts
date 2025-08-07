@@ -438,6 +438,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Question not found" });
       }
 
+      // Debug logging for answer validation
+      console.log('=== ANSWER VALIDATION DEBUG ===');
+      console.log('Question ID:', questionId);
+      console.log('Question data:', JSON.stringify(question, null, 2));
+      console.log('Selected answer from frontend:', selectedAnswer);
+      console.log('Correct answer from DB:', question.correctAnswer);
+
       // Normalize answer formats for comparison
       // Handle both "A"/"B"/"C"/"D" and "Option A"/"Option B"/"Option C"/"Option D" formats
       const normalizeAnswer = (answer: string): string => {
@@ -452,6 +459,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const normalizedSelected = normalizeAnswer(selectedAnswer);
       const normalizedCorrect = normalizeAnswer(question.correctAnswer);
+      
+      console.log('Normalized selected:', normalizedSelected);
+      console.log('Normalized correct:', normalizedCorrect);
+      console.log('Are they equal?', normalizedSelected === normalizedCorrect);
+      console.log('=== END DEBUG ===');
+
       const isCorrect = normalizedSelected === normalizedCorrect;
       let points = 0;
       let answerOrder;
