@@ -461,18 +461,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
             else if (answerOrder === 3) points = 10;
             else points = 5;
           }
+          
+          // For speed scoring, bonus questions participate in speed scoring without 2x multiplier
         } else if (quiz?.scoringType === "speed") {
-          // Standard position-based scoring
+          // Standard position-based scoring - bonus questions participate normally
           if (answerOrder === 1) points = 20;
           else if (answerOrder === 2) points = 15;
           else if (answerOrder === 3) points = 10;
           else points = 5;
         } else {
+          // Non-speed scoring - bonus questions get 2x multiplier
           points = question.points || 10;
-        }
-
-        if (question.isBonus) {
-          points *= 2;
+          if (question.isBonus) {
+            points *= 2;
+          }
         }
       }
 
