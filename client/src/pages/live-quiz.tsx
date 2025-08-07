@@ -686,13 +686,6 @@ export default function LiveQuiz() {
               })}
             </div>
 
-            {/* Debug Info */}
-            <div className="text-center mb-4">
-              <p className="text-sm text-gray-500">
-                Debug: Selected={selectedAnswer || 'none'} | Submitted={isAnswerSubmitted ? 'yes' : 'no'} | Session={userSession?.id || 'none'}
-              </p>
-            </div>
-
             {/* Action Buttons */}
             <div className="flex items-center justify-center space-x-4">
               <Button 
