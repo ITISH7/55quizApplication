@@ -350,23 +350,12 @@ export default function QuizControl() {
                         {currentQuestion.options.map((option: string, index: number) => (
                           <div 
                             key={index}
-                            className={`flex items-center space-x-3 p-3 rounded-lg border ${
-                              String.fromCharCode(65 + index) === currentQuestion.correctAnswer 
-                                ? 'bg-success-100 border-success-300' 
-                                : 'bg-white border-gray-200'
-                            }`}
+                            className="flex items-center space-x-3 p-3 rounded-lg border bg-white border-gray-200"
                           >
-                            <span className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium ${
-                              String.fromCharCode(65 + index) === currentQuestion.correctAnswer
-                                ? 'bg-success-600 text-white'
-                                : 'bg-primary-100 text-primary-600'
-                            }`}>
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium bg-primary-100 text-primary-600">
                               {String.fromCharCode(65 + index)}
                             </span>
                             <span className="text-gray-900">{option}</span>
-                            {String.fromCharCode(65 + index) === currentQuestion.correctAnswer && (
-                              <div className="ml-auto text-xs text-success-600 font-medium opacity-70">CORRECT</div>
-                            )}
                           </div>
                         ))}
                       </div>
@@ -377,6 +366,7 @@ export default function QuizControl() {
                       <div className="flex items-center space-x-4">
                         <span>Time Limit: <strong>{currentQuestion.timeLimit}s</strong></span>
                         <span>Points: <strong>{currentQuestion.points || 10}</strong></span>
+                        <span className="text-xs text-gray-400">Answer: <strong>{currentQuestion.correctAnswer}</strong></span>
                         {currentQuestion.isBonus && (
                           <Badge variant="outline" className="bg-warning-50 text-warning-700 border-warning-200">
                             Bonus Question
