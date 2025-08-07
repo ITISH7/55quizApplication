@@ -157,7 +157,8 @@
   }
 
   input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
-    @apply border-saffron-400 outline-none;
+    @apply outline-none;
+    border-color: hsl(30, 100%, 60%);
     box-shadow: 
       0 8px 25px rgba(255, 107, 53, 0.15),
       0 0 0 3px rgba(255, 107, 53, 0.1),
@@ -215,7 +216,13 @@
   }
 
   .quiz-option {
-    @apply p-6 bg-white hover:bg-saffron-50 border-2 border-gray-200 hover:border-saffron-300 rounded-2xl transition-all duration-300 cursor-pointer;
+    @apply p-6 bg-white border-2 border-gray-200 rounded-2xl transition-all duration-300 cursor-pointer;
+    background-color: white;
+  }
+
+  .quiz-option:hover {
+    background-color: hsl(30, 100%, 96%);
+    border-color: hsl(30, 100%, 75%);
     box-shadow: 
       0 4px 15px rgba(0, 0, 0, 0.08),
       0 1px 3px rgba(0, 0, 0, 0.1);
@@ -247,7 +254,8 @@
   }
 
   .quiz-option-selected {
-    @apply bg-saffron-50 border-saffron-500;
+    background-color: hsl(30, 100%, 96%);
+    border-color: hsl(30, 100%, 60%);
     box-shadow: 
       0 8px 25px rgba(255, 107, 53, 0.2),
       0 0 0 3px rgba(255, 107, 53, 0.1),
@@ -256,7 +264,8 @@
   }
 
   .quiz-option-correct {
-    @apply bg-green-100 border-green-500;
+    background-color: hsl(120, 85%, 90%);
+    border-color: hsl(120, 85%, 30%);
     box-shadow: 
       0 8px 25px rgba(46, 139, 87, 0.2),
       0 0 0 3px rgba(46, 139, 87, 0.1),
@@ -293,7 +302,9 @@
   }
 
   .leaderboard-rank-1 {
-    @apply bg-gradient-to-r from-saffron-50 to-saffron-100 border-l-4 border-saffron-500;
+    background: linear-gradient(to right, hsl(30, 100%, 96%), hsl(30, 100%, 92%));
+    border-left: 4px solid hsl(30, 100%, 60%);
+    @apply p-4 rounded-lg transition-colors;
     box-shadow: 
       0 4px 15px rgba(255, 107, 53, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -318,14 +329,18 @@
   }
 
   .leaderboard-rank-3 {
-    @apply bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-500;
+    background: linear-gradient(to right, hsl(120, 85%, 95%), hsl(120, 85%, 90%));
+    border-left: 4px solid hsl(120, 85%, 30%);
+    @apply p-4 rounded-lg transition-colors;
     box-shadow: 
       0 4px 15px rgba(46, 139, 87, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.8);
   }
 
   .leaderboard-current-user {
-    @apply bg-gradient-to-r from-saffron-50 to-green-50 border-l-4 border-saffron-500;
+    background: linear-gradient(to right, hsl(30, 100%, 96%), hsl(120, 85%, 95%));
+    border-left: 4px solid hsl(30, 100%, 60%);
+    @apply p-4 rounded-lg transition-colors;
     box-shadow: 
       0 8px 25px rgba(255, 107, 53, 0.2),
       0 0 0 2px rgba(255, 107, 53, 0.1),
@@ -561,7 +576,8 @@
     }
     
     .quiz-option-selected {
-      @apply border-saffron-900 bg-saffron-100;
+      background-color: hsl(30, 100%, 92%);
+      border-color: hsl(30, 100%, 30%);
     }
   }
 
