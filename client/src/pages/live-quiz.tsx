@@ -116,17 +116,19 @@ export default function LiveQuiz() {
   useEffect(() => {
     if (lastMessage) {
       if (lastMessage.type === "question_revealed") {
+        const isNewQuestion = lastMessage.question && lastMessage.question.id !== currentQuestion?.id;
+        
         setCurrentQuestion(lastMessage.question);
         setSelectedAnswer("");
+        
         // Check if this question was already answered
         const wasAnswered = submittedQuestions.has(lastMessage.question.id);
         setIsAnswerSubmitted(wasAnswered);
-        setQuestionStartTime(Date.now());
-        setTimeRemaining(lastMessage.question?.timeLimit || 45);
         
-        // If this is a new question, ensure timer starts properly
-        if (lastMessage.question && lastMessage.question.id !== currentQuestion?.id) {
+        // Reset timer state for new questions
+        if (isNewQuestion) {
           setQuestionStartTime(Date.now());
+          setTimeRemaining(lastMessage.question?.timeLimit || 45);
         }
       } else if (lastMessage.type === "answer_submitted") {
         refetchLeaderboard();
@@ -134,7 +136,7 @@ export default function LiveQuiz() {
         setQuizEnded(true);
       }
     }
-  }, [lastMessage, refetchLeaderboard]);
+  }, [lastMessage, refetchLeaderboard, currentQuestion?.id]);
 
   const submitAnswerMutation = useMutation({
     mutationFn: async ({ sessionId, questionId, selectedAnswer }: { 

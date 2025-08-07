@@ -11,12 +11,13 @@ interface QuizTimerProps {
 export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
 
+  // Reset timer when duration changes (new question)
   useEffect(() => {
     setTimeLeft(duration);
   }, [duration]);
 
   useEffect(() => {
-    if (!isRunning) return;
+    if (!isRunning || timeLeft <= 0) return;
 
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
@@ -29,7 +30,7 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isRunning, onComplete]);
+  }, [isRunning, onComplete, timeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
