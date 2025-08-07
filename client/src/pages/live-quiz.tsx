@@ -26,6 +26,7 @@ export default function LiveQuiz() {
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
   const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(new Set());
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
+  const [questionTimeLimit, setQuestionTimeLimit] = useState<number>(45);
   const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [quizEnded, setQuizEnded] = useState(false);
   const [forceRefresh, setForceRefresh] = useState(0);
@@ -128,7 +129,9 @@ export default function LiveQuiz() {
         // Reset timer state for new questions
         if (isNewQuestion) {
           setQuestionStartTime(Date.now());
-          setTimeRemaining(lastMessage.question?.timeLimit || 45);
+          const questionTime = lastMessage.question?.timeLimit || 45;
+          setTimeRemaining(questionTime);
+          setQuestionTimeLimit(questionTime);
         }
       } else if (lastMessage.type === "answer_submitted") {
         refetchLeaderboard();
@@ -441,6 +444,16 @@ export default function LiveQuiz() {
 
   // If no current question from WebSocket, use the latest revealed question from API
   const displayQuestion = currentQuestion || currentRevealedQuestion;
+  
+  // Initialize timer for questions loaded from API (on page refresh)
+  useEffect(() => {
+    if (currentRevealedQuestion && !currentQuestion) {
+      const questionTime = currentRevealedQuestion.timeLimit || 45;
+      setQuestionTimeLimit(questionTime);
+      setTimeRemaining(questionTime);
+      setQuestionStartTime(Date.now());
+    }
+  }, [currentRevealedQuestion, currentQuestion]);
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
@@ -590,7 +603,7 @@ export default function LiveQuiz() {
         {/* Timer Bar */}
         <div className="mb-8">
           <QuizTimer
-            duration={timeRemaining}
+            duration={questionTimeLimit}
             isRunning={!isAnswerSubmitted}
             onComplete={() => {
               if (!isAnswerSubmitted) {
