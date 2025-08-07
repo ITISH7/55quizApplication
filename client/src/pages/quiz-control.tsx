@@ -365,7 +365,7 @@ export default function QuizControl() {
                             </span>
                             <span className="text-gray-900">{option}</span>
                             {String.fromCharCode(65 + index) === currentQuestion.correctAnswer && (
-                              <div className="ml-auto text-success-600">✓</div>
+                              <div className="ml-auto text-xs text-success-600 font-medium opacity-70">CORRECT</div>
                             )}
                           </div>
                         ))}
