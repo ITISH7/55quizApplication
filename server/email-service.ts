@@ -34,8 +34,8 @@ class EmailService {
         port: 587,
         secure: false, // Use STARTTLS
         auth: {
-          user: process.env.AWS_SES_SMTP_USERNAME || '', // Actual 20-char SMTP username from AWS SES
-          pass: process.env.AWS_SES_SMTP_PASSWORD || '', // SMTP password from AWS SES
+          user: 'AWS_API_KEY', // AWS SES SMTP username  
+          pass: 'BIYGgP9PjlgB6lTMeBmeKaXaYLQleP2DSLpTLMmIc0uO', // AWS SES SMTP password
         },
       };
 
@@ -46,10 +46,8 @@ class EmailService {
       if (emailConfig.auth.user && emailConfig.auth.pass) {
         this.transporter = nodemailer.createTransport(emailConfig);
         console.log('Email service initialized successfully');
-        console.log('Using SMTP user:', emailConfig.auth.user.substring(0, 8) + '...');
       } else {
-        console.log('Email service not initialized - missing SES credentials');
-        console.log('Need: AWS_SES_SMTP_USERNAME and AWS_SES_SMTP_PASSWORD');
+        console.log('Email service not initialized - missing credentials');
       }
     } catch (error) {
       console.error('Failed to initialize email service:', error);
