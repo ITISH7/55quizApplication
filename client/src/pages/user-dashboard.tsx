@@ -114,28 +114,32 @@ export default function UserDashboard() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen hero-tri-color indian-pattern-bg">
       {/* Navigation Header */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+      <nav className="indian-navbar tri-color-glow">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Brain className="h-8 w-8 text-primary-600" />
-              <h1 className="ml-4 text-xl font-semibold text-gray-900">
-                Live Quiz Showdown
+              <Brain className="h-8 w-8 text-white" />
+              <h1 className="ml-4 text-xl navbar-title">
+                🏆 Live Quiz Showdown
               </h1>
+              <div className="indian-flag">
+                <div className="flag-stripes"></div>
+              </div>
+              <span className="independence-sparkle">✨</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user.email}</span>
+              <span className="text-sm text-white/90 font-medium">{user.email?.split('@')[0]}</span>
               <Button
-                variant="ghost"
-                size="sm"
+                className="logout-btn-indian"
                 onClick={() => {
                   logout();
                   setLocation("/login");
                 }}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
@@ -145,12 +149,20 @@ export default function UserDashboard() {
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Welcome to Quiz Showdown!
-          </h2>
-          <p className="text-lg text-gray-600">
-            Join live quizzes during your team calls and compete with colleagues
-          </p>
+          <div className="quiz-card tri-color-glow p-8 max-w-4xl mx-auto">
+            <h2 className="text-4xl font-bold quiz-question mb-4">
+              🇮🇳 Welcome to Live Quiz Showdown! 🎉
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Join exciting Independence Day quizzes and test your knowledge about our incredible nation! 
+              Compete with colleagues and celebrate our heritage together.
+            </p>
+            <div className="flex justify-center mt-4 space-x-2">
+              <span className="animate-bounce">🏆</span>
+              <span className="animate-bounce delay-100">🎯</span>
+              <span className="animate-bounce delay-200">⭐</span>
+            </div>
+          </div>
         </div>
 
         {/* Active Quizzes */}

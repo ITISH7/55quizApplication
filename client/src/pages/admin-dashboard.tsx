@@ -258,22 +258,27 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen hero-tri-color indian-pattern-bg">
       {/* Navigation Header */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
+      <nav className="indian-navbar tri-color-glow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Brain className="h-8 w-8 text-primary-600" />
-              <h1 className="ml-4 text-xl font-semibold text-gray-900">Quiz Admin</h1>
+              <Brain className="h-8 w-8 text-white" />
+              <h1 className="ml-4 text-xl navbar-title">🎯 Quiz Admin</h1>
+              <div className="indian-flag">
+                <div className="flag-stripes"></div>
+              </div>
+              <span className="independence-sparkle">✨</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user.email}</span>
-              <Button variant="ghost" size="sm" onClick={() => {
+              <span className="text-sm text-white/90 font-medium">{user.email?.split('@')[0]}</span>
+              <Button className="logout-btn-indian" onClick={() => {
                 logout();
                 setLocation("/login");
               }}>
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
               </Button>
             </div>
           </div>
@@ -283,25 +288,29 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="quiz-card tri-color-glow interactive-hover">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <FileText className="h-8 w-8 text-primary-600" />
+                <div className="p-3 rounded-full bg-gradient-to-br from-saffron-500 to-saffron-600">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Total Quizzes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalQuizzes}</p>
+                  <p className="text-2xl font-bold quiz-question">{stats.totalQuizzes}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="quiz-card tri-color-glow interactive-hover">
             <CardContent className="p-6">
               <div className="flex items-center">
-                <Play className="h-8 w-8 text-success-600" />
+                <div className="p-3 rounded-full bg-gradient-to-br from-green-500 to-green-600">
+                  <Play className="h-6 w-6 text-white" />
+                </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-500">Active Quizzes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeQuizzes}</p>
+                  <p className="text-2xl font-bold quiz-question">{stats.activeQuizzes}</p>
                 </div>
               </div>
             </CardContent>
