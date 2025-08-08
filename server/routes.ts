@@ -439,38 +439,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const normalizedCorrect = normalizeAnswer(question.correctAnswer);
       const isCorrect = normalizedSelected === normalizedCorrect;
       let points = 0;
-      let answerOrder;
+      let answerOrder = null;
+
+      console.log('=== SCORING DEBUG START ===');
+      console.log('Question:', { id: questionId, isBonus: question.isBonus, questionPoints: question.points });
+      console.log('Answer:', { selectedAnswer, isCorrect });
 
       if (isCorrect) {
         const answerCount = await storage.getQuestionAnswerCount(questionId);
         answerOrder = answerCount + 1;
+        console.log('Answer order (position):', answerOrder);
 
         // Bonus questions are NOT affected by scoring type - always use base points
         if (question.isBonus) {
           points = question.points || 10;
+          console.log('Bonus question - using base points:', points);
         } else {
           // Regular questions follow the scoring type
           const quiz = await storage.getQuiz(session.quizId);
+          console.log('Quiz scoring type:', quiz?.scoringType);
+          console.log('Raw speedScoringConfig:', quiz?.speedScoringConfig);
           if (quiz?.scoringType === "speed" && quiz.speedScoringConfig) {
             // Position-based scoring with custom configuration
             const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : [];
             
-            console.log('Speed scoring debug:', {
+            console.log('Processing speed config:', {
               speedConfig,
               answerOrder,
-              configLength: speedConfig.length
+              configLength: speedConfig.length,
+              isArray: Array.isArray(speedConfig)
             });
             
             if (speedConfig.length > 0) {
               // Use custom points for this position (1st, 2nd, 3rd, etc.)
               if (answerOrder <= speedConfig.length) {
                 points = speedConfig[answerOrder - 1]?.points || 5;
+                console.log(`Position ${answerOrder} - using configured points:`, points);
               } else {
                 // For positions beyond configured values, use the last configured value
                 points = speedConfig[speedConfig.length - 1]?.points || 5;
+                console.log(`Position ${answerOrder} (beyond config) - using last configured points:`, points);
               }
-              
-              console.log('Using custom speed points:', points);
             } else {
               // Fallback to default position-based scoring if no config
               if (answerOrder === 1) points = 20;
@@ -478,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               else if (answerOrder === 3) points = 10;
               else points = 5;
               
-              console.log('Using default speed points:', points);
+              console.log('No speed config found - using default points:', points);
             }
           } else if (quiz?.scoringType === "speed") {
             // Standard position-based scoring (no custom config)
@@ -486,15 +495,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             else if (answerOrder === 2) points = 15;
             else if (answerOrder === 3) points = 10;
             else points = 5;
+            console.log('Speed scoring without config - using standard points:', points);
           } else {
             // Standard scoring
             points = question.points || 10;
+            console.log('Standard scoring - using question points:', points);
           }
         }
+      } else {
+        console.log('Incorrect answer - 0 points awarded');
       }
+
+      console.log('Final points to award:', points);
+      console.log('=== SCORING DEBUG END ===');
 
       // Get current answers BEFORE creating the new answer to avoid double-counting
       const currentAnswers = await storage.getSessionAnswers(sessionId);
+      const currentTotal = currentAnswers.reduce((sum, a) => sum + (a.points || 0), 0);
+      
+      console.log('=== SCORE UPDATE DEBUG ===');
+      console.log('Current answers count:', currentAnswers.length);
+      console.log('Current total score:', currentTotal);
+      console.log('Points to add:', points);
       
       const answer = await storage.createAnswer({
         sessionId,
@@ -502,13 +524,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         selectedAnswer: selectedAnswer || null,
         isCorrect,
         points,
-        answerOrder,
-        timeToAnswer: answerTime || 0 // Ensure timeToAnswer is never undefined
+        answerOrder: answerOrder || undefined,
+        timeToAnswer: answerTime || 0
       });
 
-      // Update session score - just add the new points to existing total
-      const totalScore = currentAnswers.reduce((sum, a) => sum + (a.points || 0), 0) + points;
-      await storage.updateSessionScore(sessionId, totalScore);
+      // Calculate new total score
+      const newTotalScore = currentTotal + points;
+      console.log('New total score:', newTotalScore);
+      console.log('=== SCORE UPDATE DEBUG END ===');
+      
+      await storage.updateSessionScore(sessionId, newTotalScore);
 
       // Broadcast answer to quiz room
       broadcastToQuiz(session.quizId, {
