@@ -54,6 +54,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/send-otp", async (req, res) => {
     try {
       const { email } = req.body;
+      console.log('OTP Send - Request body:', req.body);
+      console.log('OTP Send - Email value:', email);
+      console.log('OTP Send - Email type:', typeof email);
       
       // Validate email domain
       if (!email.endsWith("@fiftyfivetech.io")) {
@@ -89,6 +92,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/test-email", requireAuth, requireAdmin, async (req, res) => {
     try {
       const { email } = req.body;
+      console.log('Test Email - Request body:', req.body);
+      console.log('Test Email - Email value:', email);
+      console.log('Test Email - Email type:', typeof email);
+      console.log('Test Email - User making request:', req.user.email);
       
       if (!email) {
         return res.status(400).json({ error: "Email is required" });
