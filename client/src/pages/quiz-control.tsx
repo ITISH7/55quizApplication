@@ -67,6 +67,20 @@ export default function QuizControl() {
     refetchInterval: 3000 // Refresh every 3 seconds
   });
 
+  // Get top 5 correct answerers for current question
+  const { data: correctAnswerersData, refetch: refetchCorrectAnswerers } = useQuery({
+    queryKey: ["/api/quizzes", quizId, "questions", currentQuestion?.id, "correct-answers"],
+    queryFn: async () => {
+      const response = await fetch(`/api/quizzes/${quizId}/questions/${currentQuestion?.id}/correct-answers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("Failed to fetch correct answers");
+      return response.json();
+    },
+    enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
+    refetchInterval: 2000 // Refresh every 2 seconds for real-time updates
+  });
+
   // WebSocket connection for real-time updates
   const { lastMessage } = useWebSocket(token, quizId);
 
@@ -75,9 +89,10 @@ export default function QuizControl() {
       if (lastMessage.type === "answer_submitted") {
         refetchSessions();
         refetchLeaderboard();
+        refetchCorrectAnswerers();
       }
     }
-  }, [lastMessage, refetchSessions, refetchLeaderboard]);
+  }, [lastMessage, refetchSessions, refetchLeaderboard, refetchCorrectAnswerers]);
 
   const revealQuestionMutation = useMutation({
     mutationFn: async (questionId: string) => {
@@ -129,6 +144,8 @@ export default function QuizControl() {
   const currentQuestion = questions[currentQuestionIndex];
   const sessions = sessionsData?.sessions || [];
   const leaderboard = leaderboardData?.leaderboard || [];
+  const correctAnswerers = correctAnswerersData?.correctAnswerers || [];
+  const totalCorrect = correctAnswerersData?.totalCorrect || 0;
 
   const handleRevealQuestion = () => {
     if (currentQuestion) {
@@ -351,6 +368,64 @@ export default function QuizControl() {
               </CardContent>
             </Card>
 
+            {/* Top 5 Correct Answerers for Current Question */}
+            {currentQuestion?.isRevealed && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+                      <Trophy className="h-5 w-5 text-green-600 mr-2" />
+                      Top 5 Correct Answers
+                    </h3>
+                    <div className="text-sm text-gray-600">
+                      {totalCorrect} total correct
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {correctAnswerers.length === 0 ? (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Trophy className="h-8 w-8 text-yellow-600" />
+                        </div>
+                        <p className="text-gray-500">No correct answers yet</p>
+                        <p className="text-xs text-gray-400 mt-1">Winners will appear here as they answer correctly</p>
+                      </div>
+                    ) : (
+                      correctAnswerers.map((answerer: any, index: number) => (
+                        <div key={answerer.userId} className="flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                              answerer.rank === 1 ? 'bg-yellow-500 text-white' :
+                              answerer.rank === 2 ? 'bg-gray-400 text-white' :
+                              answerer.rank === 3 ? 'bg-orange-500 text-white' :
+                              'bg-green-600 text-white'
+                            }`}>
+                              {answerer.rank === 1 ? '🥇' :
+                               answerer.rank === 2 ? '🥈' :
+                               answerer.rank === 3 ? '🥉' : answerer.rank}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-900">{answerer.displayName}</p>
+                              <p className="text-xs text-gray-500">Answer: {answerer.selectedAnswer} • {answerer.answerTime}s</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge className="bg-green-100 text-green-800 text-xs">
+                              Correct
+                            </Badge>
+                            <span className="text-xs text-gray-500">
+                              #{answerer.rank}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             {/* Live Responses */}
             <Card>
               <CardContent className="p-6">

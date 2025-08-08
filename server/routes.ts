@@ -629,6 +629,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get top 5 correct answerers for specific question
+  app.get("/api/quizzes/:quizId/questions/:questionId/correct-answers", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { quizId, questionId } = req.params;
+      console.log('Fetching correct answers for question:', questionId, 'in quiz:', quizId);
+      
+      const quiz = await storage.getQuiz(quizId);
+      if (!quiz) {
+        return res.status(404).json({ error: "Quiz not found" });
+      }
+
+      const sessions = await storage.getActiveSessionsForQuiz(quizId);
+      const correctAnswerers: any[] = [];
+
+      // Find all users who answered this question correctly
+      for (const session of sessions) {
+        const correctAnswer = session.answers.find((answer: any) => 
+          answer.questionId === questionId && answer.isCorrect
+        );
+        
+        if (correctAnswer) {
+          correctAnswerers.push({
+            userId: session.user.id,
+            email: session.user.email,
+            submittedAt: correctAnswer.submittedAt,
+            answerTime: correctAnswer.timeToAnswer || 0,
+            selectedAnswer: correctAnswer.selectedAnswer,
+            isCorrect: true
+          });
+        }
+      }
+
+      // Sort by submission time (fastest first) and take top 5
+      const top5CorrectAnswerers = correctAnswerers
+        .sort((a, b) => new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime())
+        .slice(0, 5)
+        .map((answerer, index) => ({
+          ...answerer,
+          rank: index + 1,
+          displayName: answerer.email.split('@')[0]
+        }));
+
+      console.log('Top 5 correct answerers found:', top5CorrectAnswerers.length);
+      res.json({ 
+        correctAnswerers: top5CorrectAnswerers,
+        totalCorrect: correctAnswerers.length,
+        questionId 
+      });
+    } catch (error) {
+      console.error('Error fetching correct answers:', error);
+      res.status(500).json({ error: "Failed to fetch correct answers" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket setup
