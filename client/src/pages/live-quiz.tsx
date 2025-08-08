@@ -11,42 +11,40 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { Leaderboard } from "@/components/leaderboard";
-import {
-  Check,
-  SkipForward,
-  Users,
-  Trophy,
-  LogOut,
-  AlertCircle,
-  Clock,
-  Brain,
-  Home,
-  HelpCircle,
-} from "lucide-react";
+import { Check, SkipForward, Users, Trophy, LogOut, AlertCircle, Clock, Brain, Home, HelpCircle } from "lucide-react";
 
 export default function LiveQuiz() {
   const [, setLocation] = useLocation();
   const { id: quizId } = useParams<{ id: string }>();
   const { user, token } = useAuth();
   const { toast } = useToast();
-
+  
   // Local state
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [currentQuestion, setCurrentQuestion] = useState<any>(null);
   const [userSession, setUserSession] = useState<any>(null);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
-  const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(
-    new Set()
-  );
+  const [submittedQuestions, setSubmittedQuestions] = useState<Set<string>>(new Set());
   const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [questionTimeLimit, setQuestionTimeLimit] = useState<number>(45);
-  const [questionStartTime, setQuestionStartTime] = useState<number>(
-    Date.now()
-  );
+  const [questionStartTime, setQuestionStartTime] = useState<number>(Date.now());
   const [quizEnded, setQuizEnded] = useState(false);
   const [forceRefresh, setForceRefresh] = useState(0);
   const [manualSessionCheck, setManualSessionCheck] = useState<any>(null);
   const [manualCheckError, setManualCheckError] = useState<string>("");
+
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('State update - selectedAnswer:', selectedAnswer);
+  }, [selectedAnswer]);
+
+  useEffect(() => {
+    console.log('State update - isAnswerSubmitted:', isAnswerSubmitted);
+  }, [isAnswerSubmitted]);
+
+  useEffect(() => {
+    console.log('State update - userSession:', userSession);
+  }, [userSession]);
 
   // Redirect if not logged in
   if (!user) {
@@ -57,30 +55,32 @@ export default function LiveQuiz() {
   // Automatic session check on page load
   useEffect(() => {
     if (quizId && token && user) {
+      console.log('🚀 Auto session check on page load');
       const checkSession = async () => {
         try {
-          const response = await fetch(
-            `/api/user/session?quizId=${quizId}&auto=${Date.now()}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Cache-Control": "no-store",
-              },
+          const response = await fetch(`/api/user/session?quizId=${quizId}&auto=${Date.now()}`, {
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Cache-Control': 'no-store'
             }
-          );
+          });
           const data = await response.json();
-
+          
           if (response.ok) {
+            console.log('✅ Auto session check SUCCESS:', data);
             setUserSession({ id: data.session.id });
             toast({
               title: "Session Found!",
               description: "Welcome to the live quiz!",
             });
           } else {
+            console.log('❌ Auto session check FAILED:', data);
           }
-        } catch (error) {}
+        } catch (error) {
+          console.log('💥 Auto session check ERROR:', error);
+        }
       };
-
+      
       // Small delay to ensure everything is loaded
       setTimeout(checkSession, 500);
     }
@@ -90,25 +90,25 @@ export default function LiveQuiz() {
     queryKey: ["/api/quizzes", quizId],
     queryFn: async () => {
       const response = await fetch(`/api/quizzes/${quizId}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error("Failed to fetch quiz");
       return response.json();
     },
-    enabled: !!quizId,
+    enabled: !!quizId
   });
 
   const { data: leaderboardData, refetch: refetchLeaderboard } = useQuery({
     queryKey: ["/api/quizzes", quizId, "leaderboard"],
     queryFn: async () => {
       const response = await fetch(`/api/quizzes/${quizId}/leaderboard`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) throw new Error("Failed to fetch leaderboard");
       return response.json();
     },
     enabled: !!quizId,
-    refetchInterval: 5000,
+    refetchInterval: 5000
   });
 
   // WebSocket connection for real-time updates
@@ -117,19 +117,18 @@ export default function LiveQuiz() {
   useEffect(() => {
     if (lastMessage) {
       if (lastMessage.type === "question_revealed") {
-        const isNewQuestion =
-          lastMessage.question &&
-          lastMessage.question.id !== currentQuestion?.id;
-
+        const isNewQuestion = lastMessage.question && lastMessage.question.id !== currentQuestion?.id;
+        
         setCurrentQuestion(lastMessage.question);
         setSelectedAnswer("");
-
+        
         // Check if this question was already answered
         const wasAnswered = submittedQuestions.has(lastMessage.question.id);
         setIsAnswerSubmitted(wasAnswered);
-
+        
         // Reset timer state for new questions
         if (isNewQuestion) {
+          console.log('LiveQuiz: New question detected, resetting timer');
           setQuestionStartTime(Date.now());
           const questionTime = lastMessage.question?.timeLimit || 45;
           setTimeRemaining(questionTime);
@@ -143,123 +142,120 @@ export default function LiveQuiz() {
     }
   }, [lastMessage, refetchLeaderboard, currentQuestion?.id]);
 
+
   const submitAnswerMutation = useMutation({
-    mutationFn: async ({
-      sessionId,
-      questionId,
-      selectedAnswer,
-    }: {
-      sessionId: string;
-      questionId: string;
-      selectedAnswer: string | null;
+    mutationFn: async ({ sessionId, questionId, selectedAnswer }: { 
+      sessionId: string; 
+      questionId: string; 
+      selectedAnswer: string | null 
     }) => {
       const answerTime = (Date.now() - questionStartTime) / 1000; // Time in seconds
       const response = await apiRequest("POST", "/api/answers", {
         sessionId,
         questionId,
         selectedAnswer,
-        answerTime,
+        answerTime
       });
       return response.json();
     },
     onSuccess: (data, variables) => {
       setIsAnswerSubmitted(true);
-      setSubmittedQuestions(
-        (prev) => new Set([...Array.from(prev), variables.questionId])
-      );
+      setSubmittedQuestions(prev => new Set([...Array.from(prev), variables.questionId]));
       refetchLeaderboard();
-
+      
       // Handle different answer scenarios
       if (variables.selectedAnswer === null) {
         toast({
           title: "Time's Up!",
           description: "No answer was submitted for this question.",
-          variant: "default",
+          variant: "default"
         });
       } else {
         toast({
           title: data.isCorrect ? "Correct!" : "Incorrect",
-          description: data.isCorrect
-            ? `You earned ${data.points} points!`
+          description: data.isCorrect 
+            ? `You earned ${data.points} points!` 
             : "Better luck next time!",
-          variant: data.isCorrect ? "default" : "destructive",
+          variant: data.isCorrect ? "default" : "destructive"
         });
       }
     },
     onError: (error: any) => {
+      console.error('Submit answer error details:', error);
+      console.error('User session:', userSession);
+      console.error('Current question:', currentQuestion);
+      console.error('Selected answer:', selectedAnswer);
       toast({
         title: "Failed to Submit Answer",
         description: error.message || "Please try again",
-        variant: "destructive",
+        variant: "destructive"
       });
-    },
+    }
   });
 
   const handleSubmitAnswer = () => {
     if (!userSession || !displayQuestion) {
+      console.error('Cannot submit: missing session or question', { userSession, displayQuestion });
       toast({
         title: "Unable to Submit",
         description: "Session not found. Please rejoin the quiz.",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
+    
     // Convert frontend option format (A,B,C,D) to backend format (Option A, Option B, etc)
     const backendAnswer = selectedAnswer ? `Option ${selectedAnswer}` : null;
+    console.log('Submitting answer:', { sessionId: userSession.id, questionId: displayQuestion.id, selectedAnswer, backendAnswer });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
       questionId: displayQuestion.id,
-      selectedAnswer: backendAnswer,
+      selectedAnswer: backendAnswer
     });
   };
 
   const handleSkipQuestion = () => {
     if (!userSession || !displayQuestion) return;
-
+    
+    console.log('Skipping question:', { sessionId: userSession.id, questionId: displayQuestion.id });
     submitAnswerMutation.mutate({
       sessionId: userSession.id,
       questionId: displayQuestion.id,
-      selectedAnswer: null,
+      selectedAnswer: null
     });
   };
 
   const handleExitQuiz = () => {
-    if (
-      confirm(
-        "Are you sure you want to exit the quiz? Your progress will be saved."
-      )
-    ) {
+    if (confirm("Are you sure you want to exit the quiz? Your progress will be saved.")) {
       setLocation("/dashboard");
     }
   };
 
   // Get user session from API call when joining quiz
-  const {
-    data: sessionData,
-    error: sessionError,
-    refetch: refetchSession,
-  } = useQuery({
+  const { data: sessionData, error: sessionError, refetch: refetchSession } = useQuery({
     queryKey: ["/api/user/session", quizId, forceRefresh], // Include forceRefresh to bypass cache
     queryFn: async () => {
+      console.log('🔍 Fetching session for quiz:', quizId, 'User:', user?.email, 'Token present:', !!token, 'Refresh:', forceRefresh);
       const url = `/api/user/session?quizId=${quizId}&t=${Date.now()}`; // Add timestamp to bypass any caching
-
+      
       const response = await fetch(url, {
-        headers: {
+        headers: { 
           Authorization: `Bearer ${token}`,
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
       });
-
+      
+      console.log('📡 Response status:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
-
+        console.log('❌ Session fetch FAILED:', response.status, errorData);
         throw new Error(errorData.error || "Failed to fetch session");
       }
-
+      
       const data = await response.json();
-
+      console.log('✅ Session fetch SUCCESS:', data);
       return data;
     },
     enabled: !!quizId && !!token,
@@ -267,21 +263,16 @@ export default function LiveQuiz() {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     staleTime: 0, // Always fetch fresh data
-    gcTime: 0, // Don't cache at all
+    gcTime: 0 // Don't cache at all
   });
 
   // Initialize timer for existing revealed questions (on page load/refresh)
   useEffect(() => {
-    const revealedQuestions =
-      quizData?.quiz?.questions?.filter((q: any) => q.isRevealed) || [];
-    const currentRevealedQuestion =
-      revealedQuestions[revealedQuestions.length - 1];
-
-    if (
-      currentRevealedQuestion &&
-      !currentQuestion &&
-      currentRevealedQuestion.id
-    ) {
+    const revealedQuestions = quizData?.quiz?.questions?.filter((q: any) => q.isRevealed) || [];
+    const currentRevealedQuestion = revealedQuestions[revealedQuestions.length - 1];
+    
+    if (currentRevealedQuestion && !currentQuestion && currentRevealedQuestion.id) {
+      console.log('LiveQuiz: Initializing timer for existing revealed question');
       const questionTime = currentRevealedQuestion.timeLimit || 45;
       setQuestionTimeLimit(questionTime);
       setTimeRemaining(questionTime);
@@ -290,22 +281,30 @@ export default function LiveQuiz() {
   }, [quizData?.quiz?.questions, currentQuestion]);
 
   useEffect(() => {
+    console.log('🔄 Session effect triggered - sessionData:', !!sessionData, 'sessionError:', !!sessionError);
+    
     if (sessionData?.session) {
+      console.log('✅ SUCCESS: Session data retrieved successfully:', sessionData.session);
       setUserSession({ id: sessionData.session.id });
-
+      
       // Clear any existing error toasts
       toast({
         title: "Quiz Session Found!",
         description: "Welcome to the live quiz!",
-        variant: "default",
+        variant: "default"
       });
+      
     } else if (sessionError) {
+      console.log('❌ ERROR: Session error occurred:', sessionError.message);
+      console.log('🔍 Debug info - Token:', token?.substring(0, 20) + '...');
+      console.log('🔍 Debug info - User:', user?.email);
+      console.log('🔍 Debug info - Quiz ID:', quizId);
+      
       // Show user-friendly error message if no session found
       toast({
         title: "Session Not Found",
-        description:
-          "You need to join the quiz first. Redirecting to dashboard...",
-        variant: "destructive",
+        description: "You need to join the quiz first. Redirecting to dashboard...",
+        variant: "destructive"
       });
       // Redirect to dashboard after 3 seconds
       setTimeout(() => {
@@ -321,79 +320,68 @@ export default function LiveQuiz() {
         <Card className="w-full max-w-lg shadow-xl">
           <CardContent className="p-12 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-6"></div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Loading Quiz Session...
-            </h2>
-            <p className="text-gray-600">
-              Please wait while we connect you to the quiz.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Loading Quiz Session...</h2>
+            <p className="text-gray-600">Please wait while we connect you to the quiz.</p>
             <div className="mt-4 text-xs text-gray-500">
               <p>Quiz: {quizId}</p>
               <p>User: {user?.email}</p>
-              <p>Token: {token ? "Present" : "Missing"}</p>
+              <p>Token: {token ? 'Present' : 'Missing'}</p>
               {manualSessionCheck && (
                 <div className="bg-green-100 p-2 rounded mt-2">
-                  <p className="text-green-800 text-xs">
-                    Manual Check: SUCCESS
-                  </p>
-                  <p className="text-green-700 text-xs">
-                    Session: {manualSessionCheck.session?.id}
-                  </p>
+                  <p className="text-green-800 text-xs">Manual Check: SUCCESS</p>
+                  <p className="text-green-700 text-xs">Session: {manualSessionCheck.session?.id}</p>
                 </div>
               )}
               {manualCheckError && (
                 <div className="bg-red-100 p-2 rounded mt-2">
-                  <p className="text-red-800 text-xs">
-                    Manual Check: {manualCheckError}
-                  </p>
+                  <p className="text-red-800 text-xs">Manual Check: {manualCheckError}</p>
                 </div>
               )}
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   onClick={() => {
-                    setForceRefresh((prev) => prev + 1);
+                    setForceRefresh(prev => prev + 1);
                     refetchSession();
                   }}
                   className="mt-2"
                 >
                   Retry Connection
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
+                <Button 
+                  variant="outline" 
+                  size="sm" 
                   onClick={() => setLocation("/dashboard")}
                   className="mt-2"
                 >
                   Back to Dashboard
                 </Button>
-                <Button
-                  variant="secondary"
-                  size="sm"
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
                   onClick={async () => {
+                    console.log('🔧 Manual session check...');
                     try {
-                      const response = await fetch(
-                        `/api/user/session?quizId=${quizId}&manual=${Date.now()}`,
-                        {
-                          headers: {
-                            Authorization: `Bearer ${token}`,
-                            "Cache-Control": "no-store",
-                          },
+                      const response = await fetch(`/api/user/session?quizId=${quizId}&manual=${Date.now()}`, {
+                        headers: { 
+                          Authorization: `Bearer ${token}`,
+                          'Cache-Control': 'no-store'
                         }
-                      );
+                      });
                       const data = await response.json();
-
+                      
                       if (response.ok) {
+                        console.log('✅ Manual check SUCCESS:', data);
                         setManualSessionCheck(data);
                         setManualCheckError("");
                         setUserSession({ id: data.session.id });
                       } else {
-                        setManualCheckError(
-                          `${response.status}: ${data.error}`
-                        );
+                        console.log('❌ Manual check FAILED:', data);
+                        setManualCheckError(`${response.status}: ${data.error}`);
                       }
                     } catch (error) {
+                      console.log('💥 Manual check ERROR:', error);
                       setManualCheckError(`Network Error: ${error}`);
                     }
                   }}
@@ -420,15 +408,12 @@ export default function LiveQuiz() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-yellow-100 rounded-full mb-4">
                 <HelpCircle className="h-10 w-10 text-yellow-600" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Join Quiz First
-              </h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Join Quiz First</h2>
               <p className="text-lg text-gray-600 mb-6">
-                You need to join this quiz from your dashboard using the correct
-                passkey.
+                You need to join this quiz from your dashboard using the correct passkey.
               </p>
             </div>
-
+            
             <div className="space-y-4">
               <Button
                 onClick={() => setLocation("/dashboard")}
@@ -438,11 +423,9 @@ export default function LiveQuiz() {
                 <Home className="h-4 w-4 mr-2" />
                 Go to Dashboard
               </Button>
-
+              
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-800 font-medium mb-2">
-                  How to join:
-                </p>
+                <p className="text-sm text-blue-800 font-medium mb-2">How to join:</p>
                 <ol className="text-sm text-blue-700 text-left space-y-1">
                   <li>1. Go to your dashboard</li>
                   <li>2. Find the quiz you want to join</li>
@@ -460,18 +443,24 @@ export default function LiveQuiz() {
   // Get quiz data and calculate display logic here BEFORE any conditional returns
   const quiz = quizData?.quiz;
   const leaderboard = leaderboardData?.leaderboard || [];
-  const myLeaderboardEntry = leaderboard.find(
-    (entry: any) => entry.userId === user.id
-  );
+  const myLeaderboardEntry = leaderboard.find((entry: any) => entry.userId === user.id);
 
   // Display revealed questions for users
-  const revealedQuestions =
-    quiz?.questions?.filter((q: any) => q.isRevealed) || [];
-  const currentRevealedQuestion =
-    revealedQuestions[revealedQuestions.length - 1];
+  const revealedQuestions = quiz?.questions?.filter((q: any) => q.isRevealed) || [];
+  const currentRevealedQuestion = revealedQuestions[revealedQuestions.length - 1];
+
+  console.log('📝 Quiz questions debug:', {
+    totalQuestions: quiz?.questions?.length || 0,
+    revealedCount: revealedQuestions.length,
+    currentFromWebSocket: currentQuestion?.id,
+    currentFromAPI: currentRevealedQuestion?.id,
+    lastRevealed: currentRevealedQuestion,
+    quizStatus: quiz?.status
+  });
 
   // If no current question from WebSocket, use the latest revealed question from API
   const displayQuestion = currentQuestion || currentRevealedQuestion;
+
 
   // Quiz ended state
   if (quizEnded || quiz?.status === "completed") {
@@ -483,37 +472,29 @@ export default function LiveQuiz() {
               <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
                 <Trophy className="h-10 w-10 text-green-600" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Quiz Completed!
-              </h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
               <p className="text-lg text-gray-600 mb-6">
-                Thank you for participating in "{quiz?.title || "the quiz"}"
+                Thank you for participating in "{quiz?.title || 'the quiz'}"
               </p>
             </div>
-
+            
             {myLeaderboardEntry && (
               <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Your Final Results
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Your Final Results</h3>
                 <div className="grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <p className="text-2xl font-bold text-primary-600">
-                      {myLeaderboardEntry.totalScore}
-                    </p>
+                    <p className="text-2xl font-bold text-primary-600">{myLeaderboardEntry.totalScore}</p>
                     <p className="text-sm text-gray-600">Total Score</p>
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-warning-700">
-                      #{myLeaderboardEntry.rank}
-                    </p>
+                    <p className="text-2xl font-bold text-warning-700">#{myLeaderboardEntry.rank}</p>
                     <p className="text-sm text-gray-600">Final Rank</p>
                   </div>
                 </div>
               </div>
             )}
-
-            <Button
+            
+            <Button 
               onClick={() => setLocation("/dashboard")}
               size="lg"
               className="w-full"
@@ -530,7 +511,7 @@ export default function LiveQuiz() {
   // Waiting for quiz to start or question to be revealed
   if (!quiz || !displayQuestion) {
     const isQuizActive = quiz?.status === "active";
-
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
         <Card className="w-full max-w-lg shadow-xl">
@@ -543,15 +524,12 @@ export default function LiveQuiz() {
                   <Brain className="h-10 w-10 text-primary-600" />
                 )}
               </div>
-
+              
               {isQuizActive ? (
                 <>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Get Ready!
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Get Ready!</h2>
                   <p className="text-lg text-gray-600 mb-4">
-                    Quiz "{quiz.title}" is active. Waiting for admin to reveal
-                    the next question.
+                    Quiz "{quiz.title}" is active. Waiting for admin to reveal the next question.
                   </p>
                   <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
@@ -560,13 +538,9 @@ export default function LiveQuiz() {
                 </>
               ) : (
                 <>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Waiting for Quiz to Start
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Waiting for Quiz to Start</h2>
                   <p className="text-lg text-gray-600 mb-4">
-                    {quiz
-                      ? `"${quiz.title}" hasn't started yet.`
-                      : "Loading quiz details..."}
+                    {quiz ? `"${quiz.title}" hasn't started yet.` : "Loading quiz details..."}
                   </p>
                   <p className="text-sm text-gray-500">
                     The quiz admin will start the quiz when ready.
@@ -574,7 +548,7 @@ export default function LiveQuiz() {
                 </>
               )}
             </div>
-
+            
             <div className="flex justify-center space-x-3">
               <Button
                 variant="outline"
@@ -636,7 +610,7 @@ export default function LiveQuiz() {
         {/* Timer Bar */}
         <div className="mb-8">
           <QuizTimer
-            key={displayQuestion?.id || "no-question"} // Force timer reset for new questions
+            key={displayQuestion?.id || 'no-question'} // Force timer reset for new questions
             duration={questionTimeLimit}
             isRunning={!isAnswerSubmitted}
             onComplete={() => {
@@ -652,9 +626,7 @@ export default function LiveQuiz() {
           <CardContent className="p-8">
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-100 rounded-full mb-4">
-                <span className="text-2xl font-bold text-primary-600">
-                  {currentQuestionNumber}
-                </span>
+                <span className="text-2xl font-bold text-primary-600">{currentQuestionNumber}</span>
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
                 {displayQuestion.text}
@@ -665,10 +637,7 @@ export default function LiveQuiz() {
                   {leaderboard.length} participants
                 </span>
                 {displayQuestion.isBonus && (
-                  <Badge
-                    variant="outline"
-                    className="bg-warning-50 text-warning-700 border-warning-200"
-                  >
+                  <Badge variant="outline" className="bg-warning-50 text-warning-700 border-warning-200">
                     ⭐ Bonus Question
                   </Badge>
                 )}
@@ -682,37 +651,30 @@ export default function LiveQuiz() {
                 const isSelected = selectedAnswer === optionLetter;
                 // Convert frontend option (A,B,C,D) to backend format (Option A, Option B, etc)
                 const backendOptionFormat = `Option ${optionLetter}`;
-
+                
                 return (
                   <button
                     key={index}
                     onClick={() => {
                       if (!isAnswerSubmitted) {
+                        console.log('Option selected:', optionLetter);
                         setSelectedAnswer(optionLetter);
                       }
                     }}
                     disabled={isAnswerSubmitted}
                     className={`p-6 rounded-xl border-2 transition-all duration-200 text-left ${
                       isSelected
-                        ? "bg-primary-50 border-primary-500"
-                        : "bg-gray-50 hover:bg-primary-25 border-gray-200 hover:border-primary-300"
-                    } ${
-                      isAnswerSubmitted
-                        ? "opacity-60 cursor-not-allowed"
-                        : "cursor-pointer"
-                    }`}
+                        ? 'bg-primary-50 border-primary-500'
+                        : 'bg-gray-50 hover:bg-primary-25 border-gray-200 hover:border-primary-300'
+                    } ${isAnswerSubmitted ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     <div className="flex items-center space-x-4">
-                      <div
-                        className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                          isSelected
-                            ? "bg-primary-600 text-white"
-                            : "bg-gray-200 text-gray-700"
-                        }`}
-                      >
-                        <span className="text-lg font-bold">
-                          {optionLetter}
-                        </span>
+                      <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                        isSelected 
+                          ? 'bg-primary-600 text-white' 
+                          : 'bg-gray-200 text-gray-700'
+                      }`}>
+                        <span className="text-lg font-bold">{optionLetter}</span>
                       </div>
                       <span className="text-lg text-gray-900">{option}</span>
                       {isSelected && !isAnswerSubmitted && (
@@ -726,7 +688,7 @@ export default function LiveQuiz() {
 
             {/* Action Buttons */}
             <div className="flex items-center justify-center space-x-4">
-              <Button
+              <Button 
                 variant="outline"
                 onClick={handleSkipQuestion}
                 disabled={isAnswerSubmitted || submitAnswerMutation.isPending}
@@ -734,14 +696,9 @@ export default function LiveQuiz() {
                 <SkipForward className="h-4 w-4 mr-2" />
                 Skip Question
               </Button>
-              <Button
+              <Button 
                 onClick={handleSubmitAnswer}
-                disabled={
-                  !selectedAnswer ||
-                  selectedAnswer === "" ||
-                  isAnswerSubmitted ||
-                  submitAnswerMutation.isPending
-                }
+                disabled={!selectedAnswer || selectedAnswer === "" || isAnswerSubmitted || submitAnswerMutation.isPending}
                 size="lg"
                 className="min-w-[140px]"
                 title={`Debug: selectedAnswer=${selectedAnswer}, isAnswerSubmitted=${isAnswerSubmitted}, pending=${submitAnswerMutation.isPending}`}
@@ -767,9 +724,7 @@ export default function LiveQuiz() {
 
             {isAnswerSubmitted && (
               <div className="mt-6 text-center">
-                <p className="text-success-600 font-medium">
-                  Answer submitted! Waiting for next question...
-                </p>
+                <p className="text-success-600 font-medium">Answer submitted! Waiting for next question...</p>
               </div>
             )}
           </CardContent>
@@ -785,33 +740,28 @@ export default function LiveQuiz() {
             <div className="space-y-3">
               {leaderboard.slice(0, 5).map((entry: any, index: number) => {
                 const isCurrentUser = entry.userId === user.id;
-
+                
                 return (
-                  <div
+                  <div 
                     key={entry.userId}
                     className={`flex items-center justify-between p-3 rounded-lg ${
-                      isCurrentUser
-                        ? "bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200"
-                        : "bg-gray-50"
+                      isCurrentUser 
+                        ? 'bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200' 
+                        : 'bg-gray-50'
                     }`}
                   >
                     <div className="flex items-center space-x-3">
-                      <div
-                        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0
-                            ? "bg-yellow-500 text-white"
-                            : index === 1
-                            ? "bg-gray-400 text-white"
-                            : index === 2
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-300 text-gray-700"
-                        }`}
-                      >
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        index === 0 ? 'bg-yellow-500 text-white' :
+                        index === 1 ? 'bg-gray-400 text-white' :
+                        index === 2 ? 'bg-orange-500 text-white' :
+                        'bg-gray-300 text-gray-700'
+                      }`}>
                         {entry.rank}
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">
-                          {isCurrentUser ? "You" : entry.email.split("@")[0]}
+                          {isCurrentUser ? 'You' : entry.email.split('@')[0]}
                         </p>
                         <p className="text-xs text-gray-500">
                           {entry.correctAnswers}/{entry.totalAnswers} correct
@@ -819,9 +769,7 @@ export default function LiveQuiz() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900">
-                        {entry.totalScore}
-                      </p>
+                      <p className="text-lg font-bold text-gray-900">{entry.totalScore}</p>
                     </div>
                   </div>
                 );
