@@ -130,11 +130,11 @@ export default function UserDashboard() {
               <h1 className="ml-4 text-xl navbar-title">
                 🏆 Live Quiz Showdown
               </h1>
-              <img 
-                src={indianFlag} 
-                alt="Indian Flag" 
-                className="ml-3 h-6 w-auto" 
-                style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}
+              <img
+                src={indianFlag}
+                alt="Indian Flag"
+                className="ml-3 h-6 w-auto"
+                style={{ filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.3))" }}
               />
               <span className="independence-sparkle">✨</span>
             </div>
@@ -161,9 +161,9 @@ export default function UserDashboard() {
         {/* Welcome Section */}
         <div className="text-center mb-8">
           <div className="quiz-card  p-8 max-w-4xl mx-auto">
-            <h2 className="text-4xl font-bold quiz-question mb-4">
-              🇮🇳 Welcome to Live Quiz Showdown! 🎉
-            </h2>
+            <div className="text-4xl font-bold quiz-question mb-4">
+              Welcome to Live Quiz Showdown! 🎉
+            </div>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Join exciting Independence Day quizzes and test your knowledge
               about our incredible nation! Compete with colleagues and celebrate
