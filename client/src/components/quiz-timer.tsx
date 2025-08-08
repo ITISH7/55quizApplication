@@ -14,7 +14,6 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
 
   // Reset timer when duration changes (new question)
   useEffect(() => {
-    console.log('Timer: Resetting for new question, duration:', duration);
     setTimeLeft(duration);
     setHasCompleted(false);
   }, [duration]);
@@ -22,7 +21,6 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
   // Reset timer when isRunning changes from false to true
   useEffect(() => {
     if (isRunning && hasCompleted) {
-      console.log('Timer: Starting timer after completion, resetting timeLeft to duration:', duration);
       setTimeLeft(duration);
       setHasCompleted(false);
     }
@@ -34,7 +32,6 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
     const interval = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          console.log('Timer: Time up! Calling onComplete');
           setHasCompleted(true);
           onComplete?.();
           return 0;
@@ -48,7 +45,7 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  const timeString = `${minutes}:${seconds.toString().padStart(2, "0")}`;
   const progress = ((duration - timeLeft) / duration) * 100;
 
   const getTimeColor = () => {
@@ -70,12 +67,16 @@ export function QuizTimer({ duration, isRunning, onComplete }: QuizTimerProps) {
           <Clock className="h-4 w-4 mr-1" />
           Time Remaining
         </span>
-        <span className={`text-2xl font-bold ${getTimeColor()} ${timeLeft <= 10 ? 'animate-pulse' : ''}`}>
+        <span
+          className={`text-2xl font-bold ${getTimeColor()} ${
+            timeLeft <= 10 ? "animate-pulse" : ""
+          }`}
+        >
           {timeString}
         </span>
       </div>
       <div className="w-full bg-gray-300 rounded-full h-3 shadow-inner">
-        <div 
+        <div
           className={`h-3 rounded-full transition-all duration-1000 ${getProgressColor()}`}
           style={{ width: `${100 - progress}%` }}
         />
