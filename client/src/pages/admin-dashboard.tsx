@@ -8,11 +8,38 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Brain, Plus, Upload, Play, Edit, Trash, BarChart3, LogOut, FileText, Users, Clock, Activity, Download, HelpCircle } from "lucide-react";
+import {
+  Brain,
+  Plus,
+  Upload,
+  Play,
+  Edit,
+  Trash,
+  BarChart3,
+  LogOut,
+  FileText,
+  Users,
+  Clock,
+  Activity,
+  Download,
+  HelpCircle,
+} from "lucide-react";
 import { Leaderboard } from "@/components/leaderboard";
 import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
@@ -29,11 +56,11 @@ export default function AdminDashboard() {
     scoringType: "speed",
     speedScoringConfig: [
       { maxTime: 0, points: 20 }, // 1st place
-      { maxTime: 0, points: 15 }, // 2nd place  
+      { maxTime: 0, points: 15 }, // 2nd place
       { maxTime: 0, points: 10 }, // 3rd place
-      { maxTime: 0, points: 5 }   // All others
+      { maxTime: 0, points: 5 }, // All others
     ],
-    excelFile: null as File | null
+    excelFile: null as File | null,
   });
 
   const [showManualQuiz, setShowManualQuiz] = useState(false);
@@ -44,10 +71,9 @@ export default function AdminDashboard() {
       correctAnswer: "Option A",
       isBonus: false,
       timeLimit: 45,
-      points: 10
-    }
+      points: 10,
+    },
   ]);
-
 
   // Redirect if not admin
   if (!user?.isAdmin) {
@@ -59,11 +85,11 @@ export default function AdminDashboard() {
     queryKey: ["/api/quizzes"],
     queryFn: async () => {
       const response = await fetch("/api/quizzes", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to fetch quizzes");
       return response.json();
-    }
+    },
   });
 
   const createQuizMutation = useMutation({
@@ -71,7 +97,7 @@ export default function AdminDashboard() {
       const response = await fetch("/api/quizzes", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
-        body: formData
+        body: formData,
       });
       if (!response.ok) {
         const error = await response.json();
@@ -89,45 +115,47 @@ export default function AdminDashboard() {
         scoringType: "speed",
         speedScoringConfig: [
           { maxTime: 0, points: 20 }, // 1st place
-          { maxTime: 0, points: 15 }, // 2nd place  
+          { maxTime: 0, points: 15 }, // 2nd place
           { maxTime: 0, points: 10 }, // 3rd place
-          { maxTime: 0, points: 5 }   // All others
+          { maxTime: 0, points: 5 }, // All others
         ],
-        excelFile: null
+        excelFile: null,
       });
       // Reset manual questions
-      setManualQuestions([{
-        text: "",
-        options: ["", "", "", ""],
-        correctAnswer: "Option A",
-        isBonus: false,
-        timeLimit: 45,
-        points: 10
-      }]);
+      setManualQuestions([
+        {
+          text: "",
+          options: ["", "", "", ""],
+          correctAnswer: "Option A",
+          isBonus: false,
+          timeLimit: 45,
+          points: 10,
+        },
+      ]);
       setShowManualQuiz(false);
-      
+
       toast({
         title: "Success",
-        description: "Quiz created successfully"
+        description: "Quiz created successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const startQuizMutation = useMutation({
     mutationFn: async (quizId: string) => {
       const response = await fetch(`/api/quizzes/${quizId}/start`, {
         method: "POST",
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       });
       if (!response.ok) {
         const error = await response.json();
@@ -139,16 +167,16 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/quizzes"] });
       toast({
         title: "Success",
-        description: "Quiz started successfully"
+        description: "Quiz started successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
-    }
+    },
   });
 
   const handleCreateQuiz = () => {
@@ -156,23 +184,25 @@ export default function AdminDashboard() {
       toast({
         title: "Error",
         description: "Please fill title and passkey",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     // Filter out empty questions for validation
-    const validQuestions = manualQuestions.filter(q => 
-      q.text.trim() && 
-      q.options.every(opt => opt.trim()) &&
-      q.options.length === 4
+    const validQuestions = manualQuestions.filter(
+      (q) =>
+        q.text.trim() &&
+        q.options.every((opt) => opt.trim()) &&
+        q.options.length === 4
     );
 
     if (!newQuiz.excelFile && validQuestions.length === 0) {
       toast({
-        title: "Error", 
-        description: "Please either upload an Excel file or add manual questions",
-        variant: "destructive"
+        title: "Error",
+        description:
+          "Please either upload an Excel file or add manual questions",
+        variant: "destructive",
       });
       return;
     }
@@ -182,10 +212,13 @@ export default function AdminDashboard() {
     formData.append("passkey", newQuiz.passkey);
     formData.append("defaultTimePerQuestion", newQuiz.defaultTimePerQuestion);
     formData.append("scoringType", newQuiz.scoringType);
-    if (newQuiz.scoringType === 'speed') {
-      formData.append('speedScoringConfig', JSON.stringify(newQuiz.speedScoringConfig));
+    if (newQuiz.scoringType === "speed") {
+      formData.append(
+        "speedScoringConfig",
+        JSON.stringify(newQuiz.speedScoringConfig)
+      );
     }
-    
+
     if (newQuiz.excelFile) {
       formData.append("excelFile", newQuiz.excelFile);
     } else if (validQuestions.length > 0) {
@@ -197,19 +230,22 @@ export default function AdminDashboard() {
   };
 
   const addQuestion = () => {
-    setManualQuestions([...manualQuestions, {
-      text: "",
-      options: ["", "", "", ""],
-      correctAnswer: "Option A", 
-      isBonus: false,
-      timeLimit: 45,
-      points: 10
-    }]);
+    setManualQuestions([
+      ...manualQuestions,
+      {
+        text: "",
+        options: ["", "", "", ""],
+        correctAnswer: "Option A",
+        isBonus: false,
+        timeLimit: 45,
+        points: 10,
+      },
+    ]);
   };
 
   const updateQuestion = (index: number, field: string, value: any) => {
     const updated = [...manualQuestions];
-    if (field === 'options') {
+    if (field === "options") {
       updated[index].options[value.index] = value.value;
     } else {
       (updated[index] as any)[field] = value;
@@ -224,29 +260,29 @@ export default function AdminDashboard() {
   const downloadTemplate = async () => {
     try {
       const response = await fetch("/api/quiz-template", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to download template");
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
+      const a = document.createElement("a");
+      a.style.display = "none";
       a.href = url;
-      a.download = 'quiz-template.xlsx';
+      a.download = "quiz-template.xlsx";
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       toast({
         title: "Success",
-        description: "Template downloaded successfully"
+        description: "Template downloaded successfully",
       });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to download template",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -261,12 +297,15 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen hero-tri-color indian-pattern-bg">
       {/* Navigation Header */}
-      <nav className="indian-navbar tri-color-glow">
+      <nav className="indian-navbar ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-10 w-auto mr-3" />
-              <Brain className="h-8 w-8 text-white" />
+              <img
+                src={fiftyfiveLogo}
+                alt="FiftyFive Technologies"
+                className="h-20 w-auto mr-3"
+              />
               <h1 className="ml-4 text-xl navbar-title">🎯 Quiz Admin</h1>
               <div className="indian-flag">
                 <div className="flag-stripes"></div>
@@ -274,11 +313,16 @@ export default function AdminDashboard() {
               <span className="independence-sparkle">✨</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-white/90 font-medium">{user.email?.split('@')[0]}</span>
-              <Button className="logout-btn-indian" onClick={() => {
-                logout();
-                setLocation("/login");
-              }}>
+              <span className="text-sm text-white/90 font-medium">
+                {user.email?.split("@")[0]}
+              </span>
+              <Button
+                className="logout-btn-indian"
+                onClick={() => {
+                  logout();
+                  setLocation("/login");
+                }}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
               </Button>
@@ -297,13 +341,17 @@ export default function AdminDashboard() {
                   <FileText className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Quizzes</p>
-                  <p className="text-2xl font-bold quiz-question">{stats.totalQuizzes}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Quizzes
+                  </p>
+                  <p className="text-2xl font-bold quiz-question">
+                    {stats.totalQuizzes}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="quiz-card tri-color-glow interactive-hover">
             <CardContent className="p-6">
               <div className="flex items-center">
@@ -311,31 +359,41 @@ export default function AdminDashboard() {
                   <Play className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Active Quizzes</p>
-                  <p className="text-2xl font-bold quiz-question">{stats.activeQuizzes}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Active Quizzes
+                  </p>
+                  <p className="text-2xl font-bold quiz-question">
+                    {stats.activeQuizzes}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Edit className="h-8 w-8 text-warning-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Draft Quizzes</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.draftQuizzes}</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Draft Quizzes
+                  </p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.draftQuizzes}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center">
                 <Users className="h-8 w-8 text-blue-600" />
                 <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-500">Total Participants</p>
+                  <p className="text-sm font-medium text-gray-500">
+                    Total Participants
+                  </p>
                   <p className="text-2xl font-bold text-gray-900">0</p>
                 </div>
               </div>
@@ -343,11 +401,12 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-
         {/* Create New Quiz Section */}
         <Card className="mb-8">
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Create New Quiz</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Create New Quiz
+            </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <Label htmlFor="title">Quiz Title</Label>
@@ -355,22 +414,26 @@ export default function AdminDashboard() {
                   id="title"
                   placeholder="Technology Quiz - Week 1"
                   value={newQuiz.title}
-                  onChange={(e) => setNewQuiz({ ...newQuiz, title: e.target.value })}
+                  onChange={(e) =>
+                    setNewQuiz({ ...newQuiz, title: e.target.value })
+                  }
                   className="mt-2"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="passkey">Passkey</Label>
                 <Input
                   id="passkey"
                   placeholder="TECH2024"
                   value={newQuiz.passkey}
-                  onChange={(e) => setNewQuiz({ ...newQuiz, passkey: e.target.value })}
+                  onChange={(e) =>
+                    setNewQuiz({ ...newQuiz, passkey: e.target.value })
+                  }
                   className="mt-2"
                 />
               </div>
-              
+
               <div className="lg:col-span-2">
                 <div className="flex items-center justify-between mb-4">
                   <Label>Questions</Label>
@@ -383,7 +446,10 @@ export default function AdminDashboard() {
                       <Download className="h-4 w-4 mr-2" />
                       Download Excel Template
                     </Button>
-                    <Dialog open={showManualQuiz} onOpenChange={setShowManualQuiz}>
+                    <Dialog
+                      open={showManualQuiz}
+                      onOpenChange={setShowManualQuiz}
+                    >
                       <DialogTrigger asChild>
                         <Button variant="outline" size="sm">
                           <Plus className="h-4 w-4 mr-2" />
@@ -398,7 +464,9 @@ export default function AdminDashboard() {
                           {manualQuestions.map((question, index) => (
                             <Card key={index} className="p-4">
                               <div className="flex items-center justify-between mb-4">
-                                <h4 className="font-medium">Question {index + 1}</h4>
+                                <h4 className="font-medium">
+                                  Question {index + 1}
+                                </h4>
                                 {manualQuestions.length > 1 && (
                                   <Button
                                     variant="ghost"
@@ -409,87 +477,137 @@ export default function AdminDashboard() {
                                   </Button>
                                 )}
                               </div>
-                              
+
                               <div className="space-y-4">
                                 <div>
                                   <Label>Question Text</Label>
                                   <Textarea
                                     placeholder="Enter your question here..."
                                     value={question.text}
-                                    onChange={(e) => updateQuestion(index, 'text', e.target.value)}
+                                    onChange={(e) =>
+                                      updateQuestion(
+                                        index,
+                                        "text",
+                                        e.target.value
+                                      )
+                                    }
                                     className="mt-2"
                                   />
                                 </div>
-                                
+
                                 <div className="grid grid-cols-2 gap-4">
                                   {question.options.map((option, optIndex) => (
                                     <div key={optIndex}>
-                                      <Label>Option {String.fromCharCode(65 + optIndex)}</Label>
+                                      <Label>
+                                        Option{" "}
+                                        {String.fromCharCode(65 + optIndex)}
+                                      </Label>
                                       <Input
-                                        placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
+                                        placeholder={`Option ${String.fromCharCode(
+                                          65 + optIndex
+                                        )}`}
                                         value={option}
-                                        onChange={(e) => updateQuestion(index, 'options', { index: optIndex, value: e.target.value })}
+                                        onChange={(e) =>
+                                          updateQuestion(index, "options", {
+                                            index: optIndex,
+                                            value: e.target.value,
+                                          })
+                                        }
                                         className="mt-2"
                                       />
                                     </div>
                                   ))}
                                 </div>
-                                
+
                                 <div className="grid grid-cols-4 gap-4">
                                   <div>
                                     <Label>Correct Answer</Label>
                                     <Select
                                       value={question.correctAnswer}
-                                      onValueChange={(value) => updateQuestion(index, 'correctAnswer', value)}
+                                      onValueChange={(value) =>
+                                        updateQuestion(
+                                          index,
+                                          "correctAnswer",
+                                          value
+                                        )
+                                      }
                                     >
                                       <SelectTrigger className="mt-2">
                                         <SelectValue />
                                       </SelectTrigger>
                                       <SelectContent>
-                                        <SelectItem value="Option A">Option A</SelectItem>
-                                        <SelectItem value="Option B">Option B</SelectItem>
-                                        <SelectItem value="Option C">Option C</SelectItem>
-                                        <SelectItem value="Option D">Option D</SelectItem>
+                                        <SelectItem value="Option A">
+                                          Option A
+                                        </SelectItem>
+                                        <SelectItem value="Option B">
+                                          Option B
+                                        </SelectItem>
+                                        <SelectItem value="Option C">
+                                          Option C
+                                        </SelectItem>
+                                        <SelectItem value="Option D">
+                                          Option D
+                                        </SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </div>
-                                  
+
                                   <div>
                                     <Label>Time Limit (seconds)</Label>
                                     <Input
                                       type="number"
                                       value={question.timeLimit}
-                                      onChange={(e) => updateQuestion(index, 'timeLimit', parseInt(e.target.value) || 45)}
+                                      onChange={(e) =>
+                                        updateQuestion(
+                                          index,
+                                          "timeLimit",
+                                          parseInt(e.target.value) || 45
+                                        )
+                                      }
                                       className="mt-2"
                                     />
                                   </div>
-                                  
+
                                   <div>
                                     <Label>Points</Label>
                                     <Input
                                       type="number"
                                       value={question.points}
-                                      onChange={(e) => updateQuestion(index, 'points', parseInt(e.target.value) || 10)}
+                                      onChange={(e) =>
+                                        updateQuestion(
+                                          index,
+                                          "points",
+                                          parseInt(e.target.value) || 10
+                                        )
+                                      }
                                       className="mt-2"
                                       min="1"
                                       max="100"
                                     />
                                   </div>
-                                  
+
                                   <div className="flex items-center space-x-2 mt-8">
                                     <input
                                       type="checkbox"
                                       id={`bonus-${index}`}
                                       checked={question.isBonus}
-                                      onChange={(e) => updateQuestion(index, 'isBonus', e.target.checked)}
+                                      onChange={(e) =>
+                                        updateQuestion(
+                                          index,
+                                          "isBonus",
+                                          e.target.checked
+                                        )
+                                      }
                                     />
-                                    <Label htmlFor={`bonus-${index}`}>Bonus Question</Label>
+                                    <Label htmlFor={`bonus-${index}`}>
+                                      Bonus Question
+                                    </Label>
                                   </div>
                                 </div>
                               </div>
                             </Card>
                           ))}
-                          
+
                           <div className="flex justify-between">
                             <Button variant="outline" onClick={addQuestion}>
                               <Plus className="h-4 w-4 mr-2" />
@@ -504,47 +622,65 @@ export default function AdminDashboard() {
                     </Dialog>
                   </div>
                 </div>
-                
+
                 <div className="mt-2 border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-primary-500 transition-colors">
                   <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-gray-600 mb-2">Upload Excel file OR use manual questions</p>
-                  <p className="text-xs text-gray-500 mb-3">Supports .xlsx format with questions, options, and answers</p>
+                  <p className="text-gray-600 mb-2">
+                    Upload Excel file OR use manual questions
+                  </p>
+                  <p className="text-xs text-gray-500 mb-3">
+                    Supports .xlsx format with questions, options, and answers
+                  </p>
                   <Input
                     type="file"
                     accept=".xlsx,.xls"
-                    onChange={(e) => setNewQuiz({ ...newQuiz, excelFile: e.target.files?.[0] || null })}
+                    onChange={(e) =>
+                      setNewQuiz({
+                        ...newQuiz,
+                        excelFile: e.target.files?.[0] || null,
+                      })
+                    }
                     className="hidden"
                     id="excel-upload"
                   />
                   <div className="flex gap-2 justify-center">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => document.getElementById('excel-upload')?.click()}
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        document.getElementById("excel-upload")?.click()
+                      }
                     >
                       Choose Excel File
                     </Button>
-                    <Button
-                      variant="outline"
-                      onClick={downloadTemplate}
-                    >
+                    <Button variant="outline" onClick={downloadTemplate}>
                       <HelpCircle className="h-4 w-4 mr-2" />
                       Download Template
                     </Button>
                   </div>
                   {newQuiz.excelFile && (
-                    <p className="mt-2 text-sm text-green-600">Selected: {newQuiz.excelFile.name}</p>
+                    <p className="mt-2 text-sm text-green-600">
+                      Selected: {newQuiz.excelFile.name}
+                    </p>
                   )}
-                  {manualQuestions.some(q => q.text.trim()) && (
+                  {manualQuestions.some((q) => q.text.trim()) && (
                     <p className="mt-2 text-sm text-blue-600">
-                      {manualQuestions.filter(q => q.text.trim()).length} manual questions added
+                      {manualQuestions.filter((q) => q.text.trim()).length}{" "}
+                      manual questions added
                     </p>
                   )}
                 </div>
               </div>
-              
+
               <div>
-                <Label htmlFor="time">Default Time per Question (seconds)</Label>
-                <Select value={newQuiz.defaultTimePerQuestion} onValueChange={(value) => setNewQuiz({ ...newQuiz, defaultTimePerQuestion: value })}>
+                <Label htmlFor="time">
+                  Default Time per Question (seconds)
+                </Label>
+                <Select
+                  value={newQuiz.defaultTimePerQuestion}
+                  onValueChange={(value) =>
+                    setNewQuiz({ ...newQuiz, defaultTimePerQuestion: value })
+                  }
+                >
                   <SelectTrigger className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
@@ -557,37 +693,57 @@ export default function AdminDashboard() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label htmlFor="scoring">Scoring Type</Label>
-                <Select value={newQuiz.scoringType} onValueChange={(value) => setNewQuiz({ ...newQuiz, scoringType: value })}>
+                <Select
+                  value={newQuiz.scoringType}
+                  onValueChange={(value) =>
+                    setNewQuiz({ ...newQuiz, scoringType: value })
+                  }
+                >
                   <SelectTrigger className="mt-2">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="standard">Standard (10 points)</SelectItem>
-                    <SelectItem value="speed">Speed-based (Position-based Points)</SelectItem>
-                    <SelectItem value="negative">With Negative Marking</SelectItem>
+                    <SelectItem value="standard">
+                      Standard (10 points)
+                    </SelectItem>
+                    <SelectItem value="speed">
+                      Speed-based (Position-based Points)
+                    </SelectItem>
+                    <SelectItem value="negative">
+                      With Negative Marking
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              
+
               {/* Speed Scoring Configuration */}
               {newQuiz.scoringType === "speed" && (
                 <div className="lg:col-span-2">
                   <Label>Position-Based Scoring Configuration</Label>
                   <div className="mt-2 space-y-3 p-4 border border-gray-200 rounded-lg bg-blue-50">
-                    <p className="text-sm text-gray-600 mb-3">Configure points based on answer position (1st, 2nd, 3rd, etc.)</p>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Configure points based on answer position (1st, 2nd, 3rd,
+                      etc.)
+                    </p>
                     {newQuiz.speedScoringConfig.map((config, index) => (
                       <div key={index} className="flex items-center space-x-3">
                         <div className="flex-1">
                           <Label className="text-xs">Position</Label>
                           <div className="mt-1 p-2 bg-gray-100 rounded border text-sm font-medium">
-                            {index === 0 ? "1st Place" : 
-                             index === 1 ? "2nd Place" : 
-                             index === 2 ? "3rd Place" : 
-                             index === newQuiz.speedScoringConfig.length - 1 ? "All Others" :
-                             `${index + 1}${index === 3 ? 'th' : index === 4 ? 'th' : 'th'} Place`}
+                            {index === 0
+                              ? "1st Place"
+                              : index === 1
+                              ? "2nd Place"
+                              : index === 2
+                              ? "3rd Place"
+                              : index === newQuiz.speedScoringConfig.length - 1
+                              ? "All Others"
+                              : `${index + 1}${
+                                  index === 3 ? "th" : index === 4 ? "th" : "th"
+                                } Place`}
                           </div>
                         </div>
                         <div className="flex-1">
@@ -597,25 +753,36 @@ export default function AdminDashboard() {
                             value={config.points}
                             onChange={(e) => {
                               const newConfig = [...newQuiz.speedScoringConfig];
-                              newConfig[index].points = parseInt(e.target.value) || 0;
-                              setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                              newConfig[index].points =
+                                parseInt(e.target.value) || 0;
+                              setNewQuiz({
+                                ...newQuiz,
+                                speedScoringConfig: newConfig,
+                              });
                             }}
                             className="mt-1"
                           />
                         </div>
-                        {index < newQuiz.speedScoringConfig.length - 1 && newQuiz.speedScoringConfig.length > 2 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              const newConfig = newQuiz.speedScoringConfig.filter((_, i) => i !== index);
-                              setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
-                            }}
-                          >
-                            ✕
-                          </Button>
-                        )}
+                        {index < newQuiz.speedScoringConfig.length - 1 &&
+                          newQuiz.speedScoringConfig.length > 2 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newConfig =
+                                  newQuiz.speedScoringConfig.filter(
+                                    (_, i) => i !== index
+                                  );
+                                setNewQuiz({
+                                  ...newQuiz,
+                                  speedScoringConfig: newConfig,
+                                });
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          )}
                       </div>
                     ))}
                     {newQuiz.speedScoringConfig.length < 6 && (
@@ -626,8 +793,17 @@ export default function AdminDashboard() {
                         onClick={() => {
                           const newConfig = [...newQuiz.speedScoringConfig];
                           const newPosition = newConfig.length;
-                          newConfig.splice(-1, 0, { maxTime: 0, points: Math.max(5, newConfig[newConfig.length - 2]?.points - 5 || 5) });
-                          setNewQuiz({ ...newQuiz, speedScoringConfig: newConfig });
+                          newConfig.splice(-1, 0, {
+                            maxTime: 0,
+                            points: Math.max(
+                              5,
+                              newConfig[newConfig.length - 2]?.points - 5 || 5
+                            ),
+                          });
+                          setNewQuiz({
+                            ...newQuiz,
+                            speedScoringConfig: newConfig,
+                          });
                         }}
                       >
                         + Add Position
@@ -636,7 +812,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
-              
+
               <div className="lg:col-span-2">
                 <div className="bg-gray-50 p-4 rounded-lg mb-4">
                   <h4 className="font-medium mb-2 flex items-center">
@@ -644,19 +820,38 @@ export default function AdminDashboard() {
                     Excel Template Format
                   </h4>
                   <div className="text-sm text-gray-600 space-y-1">
-                    <p><strong>Required columns:</strong></p>
+                    <p>
+                      <strong>Required columns:</strong>
+                    </p>
                     <ul className="list-disc list-inside space-y-1 ml-4">
-                      <li><strong>Question:</strong> The question text</li>
-                      <li><strong>Option A, Option B, Option C, Option D:</strong> Multiple choice options</li>
-                      <li><strong>Correct Answer:</strong> Must be "Option A", "Option B", "Option C", or "Option D"</li>
-                      <li><strong>Points:</strong> Number of points (optional, defaults to 10)</li>
-                      <li><strong>Is Bonus:</strong> "Yes" or "No" (optional, defaults to "No")</li>
-                      <li><strong>Time Limit (seconds):</strong> Number of seconds (optional, uses default time)</li>
+                      <li>
+                        <strong>Question:</strong> The question text
+                      </li>
+                      <li>
+                        <strong>Option A, Option B, Option C, Option D:</strong>{" "}
+                        Multiple choice options
+                      </li>
+                      <li>
+                        <strong>Correct Answer:</strong> Must be "Option A",
+                        "Option B", "Option C", or "Option D"
+                      </li>
+                      <li>
+                        <strong>Points:</strong> Number of points (optional,
+                        defaults to 10)
+                      </li>
+                      <li>
+                        <strong>Is Bonus:</strong> "Yes" or "No" (optional,
+                        defaults to "No")
+                      </li>
+                      <li>
+                        <strong>Time Limit (seconds):</strong> Number of seconds
+                        (optional, uses default time)
+                      </li>
                     </ul>
                   </div>
                 </div>
-                
-                <Button 
+
+                <Button
                   onClick={handleCreateQuiz}
                   disabled={createQuizMutation.isPending}
                   className="w-full sm:w-auto"
@@ -673,17 +868,29 @@ export default function AdminDashboard() {
         <Card>
           <CardContent className="p-0">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Quiz Management</h2>
+              <h2 className="text-xl font-semibold text-gray-900">
+                Quiz Management
+              </h2>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quiz</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Participants</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Quiz
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Participants
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Created
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -691,18 +898,30 @@ export default function AdminDashboard() {
                     <tr key={quiz.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{quiz.title}</div>
-                          <div className="text-sm text-gray-500">Passkey: {quiz.passkey}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {quiz.title}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Passkey: {quiz.passkey}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge 
-                          variant={quiz.status === "active" ? "default" : quiz.status === "completed" ? "secondary" : "outline"}
+                        <Badge
+                          variant={
+                            quiz.status === "active"
+                              ? "default"
+                              : quiz.status === "completed"
+                              ? "secondary"
+                              : "outline"
+                          }
                         >
                           {quiz.status}
                         </Badge>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">0</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        0
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {new Date(quiz.createdAt).toLocaleDateString()}
                       </td>
@@ -720,7 +939,9 @@ export default function AdminDashboard() {
                         {quiz.status === "active" && (
                           <Button
                             size="sm"
-                            onClick={() => setLocation(`/admin/quiz/${quiz.id}/control`)}
+                            onClick={() =>
+                              setLocation(`/admin/quiz/${quiz.id}/control`)
+                            }
                           >
                             <Activity className="h-3 w-3 mr-1" />
                             Control
@@ -729,7 +950,9 @@ export default function AdminDashboard() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setLocation(`/admin/quiz/${quiz.id}/results`)}
+                          onClick={() =>
+                            setLocation(`/admin/quiz/${quiz.id}/results`)
+                          }
                         >
                           <BarChart3 className="h-3 w-3 mr-1" />
                           Results

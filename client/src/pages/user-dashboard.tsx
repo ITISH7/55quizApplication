@@ -117,12 +117,15 @@ export default function UserDashboard() {
   return (
     <div className="min-h-screen hero-tri-color indian-pattern-bg">
       {/* Navigation Header */}
-      <nav className="indian-navbar tri-color-glow">
+      <nav className="indian-navbar ">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-10 w-auto mr-3" />
-              <Brain className="h-8 w-8 text-white" />
+              <img
+                src={fiftyfiveLogo}
+                alt="FiftyFive Technologies"
+                className="h-20 w-auto mr-3"
+              />
               <h1 className="ml-4 text-xl navbar-title">
                 🏆 Live Quiz Showdown
               </h1>
@@ -132,7 +135,9 @@ export default function UserDashboard() {
               <span className="independence-sparkle">✨</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-white/90 font-medium">{user.email?.split('@')[0]}</span>
+              <span className="text-sm text-white/90 font-medium">
+                {user.email?.split("@")[0]}
+              </span>
               <Button
                 className="logout-btn-indian"
                 onClick={() => {
@@ -151,13 +156,14 @@ export default function UserDashboard() {
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Welcome Section */}
         <div className="text-center mb-8">
-          <div className="quiz-card tri-color-glow p-8 max-w-4xl mx-auto">
+          <div className="quiz-card  p-8 max-w-4xl mx-auto">
             <h2 className="text-4xl font-bold quiz-question mb-4">
               🇮🇳 Welcome to Live Quiz Showdown! 🎉
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Join exciting Independence Day quizzes and test your knowledge about our incredible nation! 
-              Compete with colleagues and celebrate our heritage together.
+              Join exciting Independence Day quizzes and test your knowledge
+              about our incredible nation! Compete with colleagues and celebrate
+              our heritage together.
             </p>
             <div className="flex justify-center mt-4 space-x-2">
               <span className="animate-bounce">🏆</span>
