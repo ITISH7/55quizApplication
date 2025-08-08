@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertQuizSchema, insertQuestionSchema, insertOtpSchema, insertAnswerSchema } from "@shared/schema";
 import multer from "multer";
 import * as XLSX from "xlsx";
+import { emailService } from "./email-service";
 
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
@@ -65,12 +66,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       await storage.createOtp({ email, code, expiresAt });
 
-      // In production, send email with Nodemailer
-      console.log(`OTP for ${email}: ${code}`);
+      // Send OTP via email service
+      const emailSent = await emailService.sendOtpEmail(email, code);
+      
+      if (!emailSent) {
+        // Fallback to console logging if email service is not configured
+        console.log(`OTP for ${email}: ${code}`);
+      }
 
-      res.json({ message: "OTP sent successfully" });
+      res.json({ 
+        message: "OTP sent successfully",
+        emailSent: emailSent,
+        method: emailSent ? "email" : "console"
+      });
     } catch (error) {
+      console.error('OTP send error:', error);
       res.status(500).json({ error: "Failed to send OTP" });
+    }
+  });
+
+  // Test email service endpoint (admin only)
+  app.post("/api/admin/test-email", requireAuth, requireAdmin, async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      // Test email connectivity
+      const connectionTest = await emailService.testConnection();
+      
+      if (connectionTest) {
+        // Send test email
+        const testSent = await emailService.sendOtpEmail(email, "123456");
+        res.json({ 
+          success: true, 
+          connectionTest, 
+          testEmailSent: testSent,
+          message: "Email service is working properly"
+        });
+      } else {
+        res.json({ 
+          success: false, 
+          connectionTest, 
+          message: "Email service connection failed"
+        });
+      }
+    } catch (error) {
+      console.error('Email test error:', error);
+      res.status(500).json({ error: "Failed to test email service" });
     }
   });
 
