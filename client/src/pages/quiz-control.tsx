@@ -399,7 +399,7 @@ export default function QuizControl() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                       <Trophy className="h-5 w-5 text-green-600 mr-2" />
-                      Top 5 Fastest Correct Answers
+                      Top 5 Candidates for This Question
                     </h3>
                     <div className="text-sm text-gray-600">
                       {isLoadingCorrectAnswerers ? 'Loading...' : `${totalCorrect} total correct`}
