@@ -74,15 +74,31 @@ export default function QuizControl() {
   const sessions = sessionsData?.sessions || [];
   const leaderboard = leaderboardData?.leaderboard || [];
 
+  // Debug the query conditions
+  console.log('🐛 Query Debug:', {
+    quizId,
+    currentQuestionId: currentQuestion?.id,
+    isRevealed: currentQuestion?.isRevealed,
+    enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
+    currentQuestionIndex,
+    totalQuestions: questions.length
+  });
+
   // Get top 5 correct answerers for current question
-  const { data: correctAnswerersData, refetch: refetchCorrectAnswerers } = useQuery({
+  const { data: correctAnswerersData, refetch: refetchCorrectAnswerers, isLoading: isLoadingCorrectAnswerers, error: correctAnswerersError } = useQuery({
     queryKey: ["/api/quizzes", quizId, "questions", currentQuestion?.id, "correct-answers"],
     queryFn: async () => {
+      console.log('🚀 Fetching correct answers for question:', currentQuestion?.id);
       const response = await fetch(`/api/quizzes/${quizId}/questions/${currentQuestion?.id}/correct-answers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error("Failed to fetch correct answers");
-      return response.json();
+      if (!response.ok) {
+        console.error('❌ API Error:', response.status, response.statusText);
+        throw new Error(`Failed to fetch correct answers: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('✅ Correct answerers data:', data);
+      return data;
     },
     enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
     refetchInterval: 2000 // Refresh every 2 seconds for real-time updates
@@ -148,6 +164,15 @@ export default function QuizControl() {
 
   const correctAnswerers = correctAnswerersData?.correctAnswerers || [];
   const totalCorrect = correctAnswerersData?.totalCorrect || 0;
+
+  // Debug the correct answerers data
+  console.log('🎯 Correct Answerers Debug:', {
+    correctAnswerersData,
+    correctAnswerers,
+    totalCorrect,
+    isLoadingCorrectAnswerers,
+    correctAnswerersError: correctAnswerersError?.message
+  });
 
   const handleRevealQuestion = () => {
     if (currentQuestion) {
@@ -380,12 +405,33 @@ export default function QuizControl() {
                       Top 5 Candidate for This Question
                     </h3>
                     <div className="text-sm text-gray-600">
-                      {totalCorrect} total correct
+                      {isLoadingCorrectAnswerers ? 'Loading...' : `${totalCorrect} total correct`}
                     </div>
                   </div>
                   
+                  {/* Debug Information */}
+                  <div className="mb-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
+                    Debug: Query enabled: {String(!!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed)} | 
+                    Question ID: {currentQuestion?.id} | 
+                    Loading: {String(isLoadingCorrectAnswerers)} | 
+                    Error: {correctAnswerersError?.message || 'None'}
+                  </div>
+                  
                   <div className="space-y-3">
-                    {correctAnswerers.length === 0 ? (
+                    {isLoadingCorrectAnswerers ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-3"></div>
+                        <p className="text-gray-500">Loading correct answers...</p>
+                      </div>
+                    ) : correctAnswerersError ? (
+                      <div className="text-center py-8">
+                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <span className="text-2xl">❌</span>
+                        </div>
+                        <p className="text-red-500">Error loading data</p>
+                        <p className="text-xs text-gray-400 mt-1">{correctAnswerersError.message}</p>
+                      </div>
+                    ) : correctAnswerers.length === 0 ? (
                       <div className="text-center py-8">
                         <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
                           <Trophy className="h-8 w-8 text-yellow-600" />
