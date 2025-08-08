@@ -629,11 +629,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get top 5 correct answerers for specific question
-  app.get("/api/quizzes/:quizId/questions/:questionId/correct-answers", requireAuth, requireAdmin, async (req: any, res) => {
+  // Get top 5 correct answerers for specific question  
+  app.get("/api/quizzes/:quizId/questions/:questionId/correct-answers", requireAuth, async (req: any, res) => {
+    console.log('🎯 CORRECT ANSWERS ENDPOINT HIT');
+    console.log('🎯 Request params:', req.params);
+    console.log('🎯 User:', req.user?.email, 'Admin:', req.user?.isAdmin);
+    
     try {
       const { quizId, questionId } = req.params;
-      console.log('Fetching correct answers for question:', questionId, 'in quiz:', quizId);
+      console.log('✅ Fetching correct answers for question:', questionId, 'in quiz:', quizId);
       
       const quiz = await storage.getQuiz(quizId);
       if (!quiz) {

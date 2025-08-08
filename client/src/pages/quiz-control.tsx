@@ -78,13 +78,30 @@ export default function QuizControl() {
   const { data: correctAnswerersData, refetch: refetchCorrectAnswerers, isLoading: isLoadingCorrectAnswerers, error: correctAnswerersError } = useQuery({
     queryKey: ["/api/quizzes", quizId, "questions", currentQuestion?.id, "correct-answers"],
     queryFn: async () => {
+      console.log('🚀 Fetching correct answers for:', { quizId, questionId: currentQuestion?.id });
       const response = await fetch(`/api/quizzes/${quizId}/questions/${currentQuestion?.id}/correct-answers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        throw new Error(`Failed to fetch correct answers: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ Error response text:', errorText);
+        throw new Error(`API Error ${response.status}: ${errorText.substring(0, 200)}`);
       }
-      return response.json();
+      
+      const text = await response.text();
+      console.log('📄 Raw response:', text.substring(0, 200));
+      
+      try {
+        return JSON.parse(text);
+      } catch (jsonError) {
+        console.error('❌ JSON Parse Error:', jsonError);
+        console.error('❌ Response was:', text);
+        throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+      }
     },
     enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
     refetchInterval: 2000 // Refresh every 2 seconds for real-time updates
