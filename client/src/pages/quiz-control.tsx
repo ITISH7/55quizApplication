@@ -370,14 +370,14 @@ export default function QuizControl() {
               </CardContent>
             </Card>
 
-            {/* Top 5 Correct Answerers for Current Question */}
+            {/* Top 5 Candidate for This Question */}
             {currentQuestion?.isRevealed && (
               <Card className="mb-6">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                       <Trophy className="h-5 w-5 text-green-600 mr-2" />
-                      Top 5 Correct Answers
+                      Top 5 Candidate for This Question
                     </h3>
                     <div className="text-sm text-gray-600">
                       {totalCorrect} total correct
@@ -427,34 +427,6 @@ export default function QuizControl() {
                 </CardContent>
               </Card>
             )}
-            
-            {/* Live Responses */}
-            <Card>
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Live Responses</h3>
-                <div className="space-y-3">
-                  {sessions.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No participants yet</p>
-                  ) : (
-                    sessions.slice(0, 5).map((session: any) => (
-                      <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                            <span className="text-white text-sm font-medium">
-                              {session.user.email.substring(0, 2).toUpperCase()}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">{session.user.email}</p>
-                            <p className="text-xs text-gray-500">Score: {session.totalScore}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Live Leaderboard */}
