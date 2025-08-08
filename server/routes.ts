@@ -646,14 +646,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const sessions = await storage.getActiveSessionsForQuiz(quizId);
       const correctAnswerers: any[] = [];
+      
+      console.log('🔍 DEBUG: Looking for correct answers...');
+      console.log('🔍 Target questionId:', questionId);
+      console.log('🔍 Sessions found:', sessions.length);
 
       // Find all users who answered this question correctly
       for (const session of sessions) {
+        console.log(`🔍 Checking session for user: ${session.user?.email}`);
+        console.log(`🔍 Session has ${session.answers?.length || 0} answers`);
+        
+        // Debug each answer
+        session.answers?.forEach((answer: any, index: number) => {
+          console.log(`🔍 Answer ${index}:`, {
+            questionId: answer.questionId,
+            isCorrect: answer.isCorrect,
+            selectedAnswer: answer.selectedAnswer,
+            matches: answer.questionId === questionId
+          });
+        });
+        
         const correctAnswer = session.answers.find((answer: any) => 
           answer.questionId === questionId && answer.isCorrect
         );
         
         if (correctAnswer) {
+          console.log('✅ Found correct answer from:', session.user?.email);
           correctAnswerers.push({
             userId: session.user.id,
             email: session.user.email,
@@ -662,6 +680,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             selectedAnswer: correctAnswer.selectedAnswer,
             isCorrect: true
           });
+        } else {
+          console.log('❌ No correct answer found for:', session.user?.email);
         }
       }
 
