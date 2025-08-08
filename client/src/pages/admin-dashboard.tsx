@@ -547,6 +547,7 @@ export default function AdminDashboard() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="10">10 seconds</SelectItem>
                     <SelectItem value="15">15 seconds</SelectItem>
                     <SelectItem value="30">30 seconds</SelectItem>
                     <SelectItem value="45">45 seconds</SelectItem>
