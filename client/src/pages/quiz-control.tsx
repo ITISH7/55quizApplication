@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { PaginatedLeaderboard } from "@/components/paginated-leaderboard";
-import { ArrowLeft, Play, Eye, SkipForward, ArrowRight, Users, Download, X, Gift } from "lucide-react";
+import { ArrowLeft, Play, Eye, SkipForward, ArrowRight, Users, Download, X, Gift, Trophy } from "lucide-react";
 
 export default function QuizControl() {
   const [, setLocation] = useLocation();
@@ -66,6 +66,13 @@ export default function QuizControl() {
     enabled: !!quizId,
     refetchInterval: 3000 // Refresh every 3 seconds
   });
+
+  // Extract quiz data first so we can use currentQuestion
+  const quiz = quizData?.quiz;
+  const questions = quiz?.questions || [];
+  const currentQuestion = questions[currentQuestionIndex];
+  const sessions = sessionsData?.sessions || [];
+  const leaderboard = leaderboardData?.leaderboard || [];
 
   // Get top 5 correct answerers for current question
   const { data: correctAnswerersData, refetch: refetchCorrectAnswerers } = useQuery({
@@ -139,11 +146,6 @@ export default function QuizControl() {
     }
   });
 
-  const quiz = quizData?.quiz;
-  const questions = quiz?.questions || [];
-  const currentQuestion = questions[currentQuestionIndex];
-  const sessions = sessionsData?.sessions || [];
-  const leaderboard = leaderboardData?.leaderboard || [];
   const correctAnswerers = correctAnswerersData?.correctAnswerers || [];
   const totalCorrect = correctAnswerersData?.totalCorrect || 0;
 
