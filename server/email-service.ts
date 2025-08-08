@@ -1,4 +1,4 @@
-import nodemailer, { Transporter } from 'nodemailer';
+import nodemailer, { Transporter } from "nodemailer";
 
 interface EmailConfig {
   host: string;
@@ -19,8 +19,8 @@ interface EmailOptions {
 
 class EmailService {
   private transporter: Transporter | null = null;
-  private fromEmail: string = '';
-  private fromName: string = '';
+  private fromEmail: string = "";
+  private fromName: string = "";
 
   constructor() {
     this.initializeTransporter();
@@ -30,36 +30,36 @@ class EmailService {
     try {
       // AWS SES Configuration
       const emailConfig: EmailConfig = {
-        host: 'email-smtp.ap-south-1.amazonaws.com',
+        host: "email-smtp.ap-south-1.amazonaws.com",
         port: 587,
         secure: false, // Use STARTTLS
         auth: {
-          user: 'AWS_API_KEY', // AWS SES SMTP username  
-          pass: 'BIYGgP9PjlgB6lTMeBmeKaXaYLQleP2DSLpTLMmIc0uO', // AWS SES SMTP password
+          user: "AKIAS7VERZK2Y3HPJT7F",
+          pass: "BIYGgP9PjlgB6lTMeBmeKaXaYLQleP2DSLpTLMmIc0uO",
         },
       };
 
-      this.fromEmail = 'noreply@fiftyfivetech.io'; // Verified SES email
-      this.fromName = 'FiftyFive Technologies';
+      this.fromEmail = "noreply@fiftyfivetech.io"; // Verified SES email
+      this.fromName = "FiftyFive Technologies";
 
       // Only create transporter if we have email credentials
       if (emailConfig.auth.user && emailConfig.auth.pass) {
         this.transporter = nodemailer.createTransport(emailConfig);
-        console.log('Email service initialized successfully');
+        console.log("Email service initialized successfully");
       } else {
-        console.log('Email service not initialized - missing credentials');
+        console.log("Email service not initialized - missing credentials");
       }
     } catch (error) {
-      console.error('Failed to initialize email service:', error);
+      console.error("Failed to initialize email service:", error);
     }
   }
 
   async sendEmail(options: EmailOptions): Promise<boolean> {
     if (!this.transporter) {
-      console.log('Email transporter not configured, logging email instead:');
+      console.log("Email transporter not configured, logging email instead:");
       console.log(`To: ${options.to}`);
       console.log(`Subject: ${options.subject}`);
-      console.log(`Content: ${options.text || 'HTML email'}`);
+      console.log(`Content: ${options.text || "HTML email"}`);
       return false;
     }
 
@@ -73,17 +73,17 @@ class EmailService {
       };
 
       const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent successfully:', info.messageId);
+      console.log("Email sent successfully:", info.messageId);
       return true;
     } catch (error) {
-      console.error('Failed to send email:', error);
+      console.error("Failed to send email:", error);
       return false;
     }
   }
 
   async sendOtpEmail(email: string, otpCode: string): Promise<boolean> {
-    const subject = 'Your OTP Code for Quiz Login';
-    
+    const subject = "Your OTP Code for Quiz Login";
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -208,16 +208,16 @@ Ready to test your knowledge? Let's make this quiz exciting!
   // Test email connectivity
   async testConnection(): Promise<boolean> {
     if (!this.transporter) {
-      console.log('Cannot test connection - transporter not configured');
+      console.log("Cannot test connection - transporter not configured");
       return false;
     }
 
     try {
       await this.transporter.verify();
-      console.log('Email service connection verified successfully');
+      console.log("Email service connection verified successfully");
       return true;
     } catch (error) {
-      console.error('Email service connection test failed:', error);
+      console.error("Email service connection test failed:", error);
       return false;
     }
   }

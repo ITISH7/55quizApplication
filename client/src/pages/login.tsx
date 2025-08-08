@@ -13,7 +13,7 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { user, login, sendOtp } = useAuth();
   const { toast } = useToast();
-  
+
   const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
@@ -31,7 +31,7 @@ export default function Login() {
       toast({
         title: "Invalid Email",
         description: "Only @fiftyfivetech.io emails are allowed",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -42,13 +42,13 @@ export default function Login() {
       setStep("otp");
       toast({
         title: "OTP Sent",
-        description: "Check your email for the 6-digit code"
+        description: "Check your email for the 6-digit code",
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -60,7 +60,7 @@ export default function Login() {
       toast({
         title: "Invalid OTP",
         description: "Please enter a 6-digit code",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -73,7 +73,7 @@ export default function Login() {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -86,19 +86,25 @@ export default function Login() {
         <CardContent className="pt-6">
           <div className="text-center mb-8">
             <div className="mb-4">
-              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-16 w-auto mx-auto mb-3" />
+              <img
+                src={fiftyfiveLogo}
+                alt="FiftyFive Technologies"
+                className="h-26 w-auto mx-auto mb-3"
+              />
             </div>
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-full mb-4">
-              <Brain className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Live Quiz Showdown</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Live Quiz Showdown
+            </h1>
             <p className="text-gray-600">Corporate Team Quiz Platform</p>
           </div>
 
           {step === "email" ? (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Email Address
                 </Label>
                 <Input
@@ -109,9 +115,11 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="mt-2"
                 />
-                <p className="text-xs text-gray-500 mt-1">Only @fiftyfivetech.io emails are allowed</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Only @fiftyfivetech.io emails are allowed
+                </p>
               </div>
-              <Button 
+              <Button
                 onClick={handleSendOtp}
                 disabled={isLoading || !email}
                 className="w-full"
@@ -123,7 +131,10 @@ export default function Login() {
           ) : (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="otp" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="otp"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Enter OTP
                 </Label>
                 <Input
@@ -131,13 +142,17 @@ export default function Login() {
                   type="text"
                   placeholder="123456"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) =>
+                    setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
                   className="mt-2 text-center text-xl font-mono"
                   maxLength={6}
                 />
-                <p className="text-xs text-gray-500 mt-1">Check your email for the 6-digit code</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Check your email for the 6-digit code
+                </p>
               </div>
-              <Button 
+              <Button
                 onClick={handleVerifyOtp}
                 disabled={isLoading || otp.length !== 6}
                 className="w-full"
@@ -145,7 +160,7 @@ export default function Login() {
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Verify & Login
               </Button>
-              <Button 
+              <Button
                 variant="outline"
                 onClick={handleSendOtp}
                 disabled={isLoading}
