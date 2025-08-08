@@ -1,0 +1,30 @@
+<svg width="36" height="24" viewBox="0 0 36 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Saffron stripe -->
+  <rect x="0" y="0" width="36" height="8" fill="#FF9933"/>
+  
+  <!-- White stripe -->
+  <rect x="0" y="8" width="36" height="8" fill="#FFFFFF"/>
+  
+  <!-- Green stripe -->
+  <rect x="0" y="16" width="36" height="8" fill="#138808"/>
+  
+  <!-- Chakra wheel -->
+  <circle cx="18" cy="12" r="3" fill="none" stroke="#000080" stroke-width="0.5"/>
+  
+  <!-- Chakra spokes -->
+  <g stroke="#000080" stroke-width="0.3">
+    <line x1="18" y1="9" x2="18" y2="15"/>
+    <line x1="15" y1="12" x2="21" y2="12"/>
+    <line x1="16.06" y1="10.06" x2="19.94" y2="13.94"/>
+    <line x1="19.94" y1="10.06" x2="16.06" y2="13.94"/>
+    
+    <!-- Additional spokes for 24-spoke wheel -->
+    <line x1="16.5" y1="9.4" x2="19.5" y2="14.6"/>
+    <line x1="19.5" y1="9.4" x2="16.5" y2="14.6"/>
+    <line x1="15.4" y1="10.5" x2="20.6" y2="13.5"/>
+    <line x1="20.6" y1="10.5" x2="15.4" y2="13.5"/>
+  </g>
+  
+  <!-- Border -->
+  <rect x="0" y="0" width="36" height="24" fill="none" stroke="#cccccc" stroke-width="0.5" rx="1"/>
+</svg>

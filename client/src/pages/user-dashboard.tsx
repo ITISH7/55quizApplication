@@ -19,6 +19,7 @@ import {
   Calendar,
 } from "lucide-react";
 import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
+import indianFlag from "@/assets/indian-flag.svg";
 
 export default function UserDashboard() {
   const [, setLocation] = useLocation();
@@ -129,9 +130,12 @@ export default function UserDashboard() {
               <h1 className="ml-4 text-xl navbar-title">
                 🏆 Live Quiz Showdown
               </h1>
-              <div className="indian-flag">
-                <div className="flag-stripes"></div>
-              </div>
+              <img 
+                src={indianFlag} 
+                alt="Indian Flag" 
+                className="ml-3 h-6 w-auto" 
+                style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.3))' }}
+              />
               <span className="independence-sparkle">✨</span>
             </div>
             <div className="flex items-center space-x-4">
