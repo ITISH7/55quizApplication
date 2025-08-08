@@ -453,20 +453,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const quiz = await storage.getQuiz(session.quizId);
           if (quiz?.scoringType === "speed" && quiz.speedScoringConfig) {
             // Position-based scoring with custom configuration
-            const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : (quiz.speedScoringConfig as any)?.timeThresholds || [];
+            const speedConfig = Array.isArray(quiz.speedScoringConfig) ? quiz.speedScoringConfig : [];
             
-            if (speedConfig.length > 0 && answerOrder <= speedConfig.length) {
+            console.log('Speed scoring debug:', {
+              speedConfig,
+              answerOrder,
+              configLength: speedConfig.length
+            });
+            
+            if (speedConfig.length > 0) {
               // Use custom points for this position (1st, 2nd, 3rd, etc.)
-              points = speedConfig[answerOrder - 1]?.points || speedConfig[speedConfig.length - 1]?.points || 5;
+              if (answerOrder <= speedConfig.length) {
+                points = speedConfig[answerOrder - 1]?.points || 5;
+              } else {
+                // For positions beyond configured values, use the last configured value
+                points = speedConfig[speedConfig.length - 1]?.points || 5;
+              }
+              
+              console.log('Using custom speed points:', points);
             } else {
-              // Default position-based scoring
+              // Fallback to default position-based scoring if no config
               if (answerOrder === 1) points = 20;
               else if (answerOrder === 2) points = 15;
               else if (answerOrder === 3) points = 10;
               else points = 5;
+              
+              console.log('Using default speed points:', points);
             }
           } else if (quiz?.scoringType === "speed") {
-            // Standard position-based scoring
+            // Standard position-based scoring (no custom config)
             if (answerOrder === 1) points = 20;
             else if (answerOrder === 2) points = 15;
             else if (answerOrder === 3) points = 10;
