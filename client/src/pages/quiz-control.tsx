@@ -91,11 +91,18 @@ export default function QuizControl() {
       
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        // Skip this update if we get HTML instead of JSON
-        throw new Error('Invalid response format - skipping update');
+        // Return empty data for non-JSON responses instead of throwing error
+        console.warn('Received non-JSON response, returning empty data');
+        return { correctAnswerers: [], totalCorrect: 0 };
       }
       
-      return response.json();
+      const data = await response.json();
+      
+      // Ensure we always return the expected structure
+      return {
+        correctAnswerers: data.correctAnswerers || [],
+        totalCorrect: data.totalCorrect || 0
+      };
     },
     enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
     refetchInterval: 5000, // Reduced frequency to 5 seconds to prevent routing conflicts
