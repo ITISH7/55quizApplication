@@ -18,6 +18,7 @@ import {
   LogOut,
   Calendar,
 } from "lucide-react";
+import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
 export default function UserDashboard() {
   const [, setLocation] = useLocation();
@@ -120,6 +121,7 @@ export default function UserDashboard() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
+              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-10 w-auto mr-3" />
               <Brain className="h-8 w-8 text-white" />
               <h1 className="ml-4 text-xl navbar-title">
                 🏆 Live Quiz Showdown

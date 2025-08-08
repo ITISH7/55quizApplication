@@ -20,6 +20,7 @@ import {
   CheckCircle
 } from "lucide-react";
 import * as XLSX from 'xlsx';
+import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
 export default function AdminQuizResults() {
   const [, setLocation] = useLocation();
@@ -188,9 +189,12 @@ export default function AdminQuizResults() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Dashboard
               </Button>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900">Quiz Results</h1>
-                <p className="text-sm text-gray-600">{quiz.title}</p>
+              <div className="flex items-center">
+                <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-6 w-auto mr-3" />
+                <div>
+                  <h1 className="text-xl font-semibold text-gray-900">Quiz Results</h1>
+                  <p className="text-sm text-gray-600">{quiz.title}</p>
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-3">

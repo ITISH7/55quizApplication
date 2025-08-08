@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Brain, Loader2 } from "lucide-react";
+import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -84,6 +85,9 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
           <div className="text-center mb-8">
+            <div className="mb-4">
+              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-16 w-auto mx-auto mb-3" />
+            </div>
             <div className="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-full mb-4">
               <Brain className="h-8 w-8 text-white" />
             </div>

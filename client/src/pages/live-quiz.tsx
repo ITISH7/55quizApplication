@@ -23,6 +23,7 @@ import {
   Home,
   HelpCircle,
 } from "lucide-react";
+import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
 export default function LiveQuiz() {
   const [, setLocation] = useLocation();
@@ -599,11 +600,14 @@ export default function LiveQuiz() {
       <div className="bg-white shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">{quiz.title}</h1>
-              <p className="text-sm text-gray-600">
-                Question {currentQuestionNumber} of {totalQuestions}
-              </p>
+            <div className="flex items-center">
+              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-8 w-auto mr-4" />
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">{quiz.title}</h1>
+                <p className="text-sm text-gray-600">
+                  Question {currentQuestionNumber} of {totalQuestions}
+                </p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="text-right">

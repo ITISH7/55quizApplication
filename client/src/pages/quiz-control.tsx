@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
 import { PaginatedLeaderboard } from "@/components/paginated-leaderboard";
 import { ArrowLeft, Play, Eye, SkipForward, ArrowRight, Users, Download, X, Gift, Trophy } from "lucide-react";
+import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
 export default function QuizControl() {
   const [, setLocation] = useLocation();
@@ -263,9 +264,12 @@ export default function QuizControl() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Admin
               </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
-                <p className="text-gray-600">Live Quiz Control Panel</p>
+              <div className="flex items-center">
+                <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-8 w-auto mr-3" />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">{quiz.title}</h1>
+                  <p className="text-gray-600">Live Quiz Control Panel</p>
+                </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">

@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Textarea } from "@/components/ui/textarea";
 import { Brain, Plus, Upload, Play, Edit, Trash, BarChart3, LogOut, FileText, Users, Clock, Activity, Download, HelpCircle } from "lucide-react";
 import { Leaderboard } from "@/components/leaderboard";
+import fiftyfiveLogo from "@/assets/fiftyfive-logo.png";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
@@ -264,6 +265,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
+              <img src={fiftyfiveLogo} alt="FiftyFive Technologies" className="h-10 w-auto mr-3" />
               <Brain className="h-8 w-8 text-white" />
               <h1 className="ml-4 text-xl navbar-title">🎯 Quiz Admin</h1>
               <div className="indian-flag">
