@@ -74,31 +74,17 @@ export default function QuizControl() {
   const sessions = sessionsData?.sessions || [];
   const leaderboard = leaderboardData?.leaderboard || [];
 
-  // Debug the query conditions
-  console.log('🐛 Query Debug:', {
-    quizId,
-    currentQuestionId: currentQuestion?.id,
-    isRevealed: currentQuestion?.isRevealed,
-    enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
-    currentQuestionIndex,
-    totalQuestions: questions.length
-  });
-
-  // Get top 5 correct answerers for current question
+  // Get top 5 fastest correct answerers for current question
   const { data: correctAnswerersData, refetch: refetchCorrectAnswerers, isLoading: isLoadingCorrectAnswerers, error: correctAnswerersError } = useQuery({
     queryKey: ["/api/quizzes", quizId, "questions", currentQuestion?.id, "correct-answers"],
     queryFn: async () => {
-      console.log('🚀 Fetching correct answers for question:', currentQuestion?.id);
       const response = await fetch(`/api/quizzes/${quizId}/questions/${currentQuestion?.id}/correct-answers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!response.ok) {
-        console.error('❌ API Error:', response.status, response.statusText);
         throw new Error(`Failed to fetch correct answers: ${response.status}`);
       }
-      const data = await response.json();
-      console.log('✅ Correct answerers data:', data);
-      return data;
+      return response.json();
     },
     enabled: !!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed,
     refetchInterval: 2000 // Refresh every 2 seconds for real-time updates
@@ -164,15 +150,6 @@ export default function QuizControl() {
 
   const correctAnswerers = correctAnswerersData?.correctAnswerers || [];
   const totalCorrect = correctAnswerersData?.totalCorrect || 0;
-
-  // Debug the correct answerers data
-  console.log('🎯 Correct Answerers Debug:', {
-    correctAnswerersData,
-    correctAnswerers,
-    totalCorrect,
-    isLoadingCorrectAnswerers,
-    correctAnswerersError: correctAnswerersError?.message
-  });
 
   const handleRevealQuestion = () => {
     if (currentQuestion) {
@@ -402,19 +379,11 @@ export default function QuizControl() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                       <Trophy className="h-5 w-5 text-green-600 mr-2" />
-                      Top 5 Candidate for This Question
+                      Top 5 Fastest Correct Answers
                     </h3>
                     <div className="text-sm text-gray-600">
                       {isLoadingCorrectAnswerers ? 'Loading...' : `${totalCorrect} total correct`}
                     </div>
-                  </div>
-                  
-                  {/* Debug Information */}
-                  <div className="mb-3 p-2 bg-blue-50 rounded text-xs text-blue-700">
-                    Debug: Query enabled: {String(!!quizId && !!currentQuestion?.id && currentQuestion?.isRevealed)} | 
-                    Question ID: {currentQuestion?.id} | 
-                    Loading: {String(isLoadingCorrectAnswerers)} | 
-                    Error: {correctAnswerersError?.message || 'None'}
                   </div>
                   
                   <div className="space-y-3">
@@ -455,16 +424,19 @@ export default function QuizControl() {
                             </div>
                             <div>
                               <p className="text-sm font-medium text-gray-900">{answerer.displayName}</p>
-                              <p className="text-xs text-gray-500">Answer: {answerer.selectedAnswer} • {answerer.answerTime}s</p>
+                              <p className="text-xs text-gray-500">
+                                Answer: {answerer.selectedAnswer} • 
+                                <span className="font-medium text-blue-600">{answerer.answerTime}s</span> response time
+                              </p>
                             </div>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Badge className="bg-green-100 text-green-800 text-xs">
-                              Correct
+                              ✓ Correct
                             </Badge>
-                            <span className="text-xs text-gray-500">
-                              #{answerer.rank}
-                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              #{answerer.rank} Fastest
+                            </Badge>
                           </div>
                         </div>
                       ))
