@@ -78,7 +78,9 @@ export default function QuizControl() {
   const { data: correctAnswerersData, refetch: refetchCorrectAnswerers, isLoading: isLoadingCorrectAnswerers, error: correctAnswerersError } = useQuery({
     queryKey: ["/api/quizzes", quizId, "questions", currentQuestion?.id, "correct-answers"],
     queryFn: async () => {
-      const response = await fetch(`/api/quizzes/${quizId}/questions/${currentQuestion?.id}/correct-answers`, {
+      const encodedQuizId = encodeURIComponent(quizId);
+      const encodedQuestionId = encodeURIComponent(currentQuestion.id);
+      const response = await fetch(`/api/quizzes/${encodedQuizId}/questions/${encodedQuestionId}/correct-answers`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
