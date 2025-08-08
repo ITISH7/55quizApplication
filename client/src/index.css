@@ -247,6 +247,7 @@
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
     transition: left 0.5s;
+    pointer-events: none;
   }
 
   .quiz-option:hover:before {
@@ -627,6 +628,7 @@
       hsl(120, 85%, 30%) 100%
     );
     animation: tri-color-flow 4s linear infinite;
+    pointer-events: none;
   }
 
   .indian-flag {
@@ -693,6 +695,7 @@
       transparent 100%
     );
     animation: tri-color-sweep 6s ease-in-out infinite;
+    pointer-events: none;
   }
 
   .independence-sparkle {
@@ -702,6 +705,7 @@
     transform: translateY(-50%);
     color: rgba(255, 255, 255, 0.8);
     animation: sparkle-dance 4s ease-in-out infinite;
+    pointer-events: none;
   }
 
   .navbar-title {
@@ -758,6 +762,7 @@
       radial-gradient(circle at 25% 25%, rgba(255, 107, 53, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 75% 75%, rgba(46, 139, 87, 0.1) 0%, transparent 50%);
     animation: pattern-drift 20s linear infinite;
+    pointer-events: none;
   }
 
   .hero-tri-color {
@@ -781,6 +786,7 @@
       radial-gradient(ellipse at top left, rgba(255, 107, 53, 0.1) 0%, transparent 60%),
       radial-gradient(ellipse at bottom right, rgba(46, 139, 87, 0.1) 0%, transparent 60%);
     animation: hero-gradient-shift 8s ease-in-out infinite;
+    pointer-events: none;
   }
 
   /* Tri-color animations */

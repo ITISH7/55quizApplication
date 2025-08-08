@@ -10,9 +10,16 @@ export class WebSocketManager {
   connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-        const wsUrl = `${protocol}//${window.location.host}/ws?token=${this.token}${this.quizId ? `&quizId=${this.quizId}` : ''}`;
+        // Validate token before connecting
+        if (!this.token || this.token.trim() === '') {
+          reject(new Error('Invalid token: Token is required for WebSocket connection'));
+          return;
+        }
         
+        const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+        const wsUrl = `${protocol}//${window.location.host}/ws?token=${encodeURIComponent(this.token)}${this.quizId ? `&quizId=${encodeURIComponent(this.quizId)}` : ''}`;
+        
+        console.log('Connecting to WebSocket:', wsUrl.replace(/token=[^&]+/, 'token=***'));
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
@@ -31,8 +38,9 @@ export class WebSocketManager {
         };
 
         this.ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          reject(error);
+          console.error('WebSocket connection error:', error);
+          console.error('Failed to connect to:', wsUrl.replace(/token=[^&]+/, 'token=***'));
+          reject(new Error(`WebSocket connection failed: ${error}`));
         };
 
         this.ws.onclose = () => {
