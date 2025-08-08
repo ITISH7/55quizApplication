@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
-import { Leaderboard } from "@/components/leaderboard";
+import { PaginatedLeaderboard } from "@/components/paginated-leaderboard";
 import { ArrowLeft, Play, Eye, SkipForward, ArrowRight, Users, Download, X, Gift } from "lucide-react";
 
 export default function QuizControl() {
@@ -382,7 +382,11 @@ export default function QuizControl() {
 
           {/* Live Leaderboard */}
           <div className="space-y-6">
-            <Leaderboard leaderboard={leaderboard} />
+            <PaginatedLeaderboard 
+              leaderboard={leaderboard} 
+              currentUserId={user?.id}
+              title="Live Leaderboard (Admin View)"
+            />
             
             {/* Timer Display */}
             {currentQuestion && isTimerRunning && (

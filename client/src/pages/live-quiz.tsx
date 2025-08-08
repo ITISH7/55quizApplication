@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { QuizTimer } from "@/components/quiz-timer";
-import { Leaderboard } from "@/components/leaderboard";
+import { PaginatedLeaderboard } from "@/components/paginated-leaderboard";
 import {
   Check,
   SkipForward,
@@ -775,60 +775,12 @@ export default function LiveQuiz() {
           </CardContent>
         </Card>
 
-        {/* Mini Leaderboard */}
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Trophy className="text-warning-700 mr-2" />
-              Live Leaderboard
-            </h3>
-            <div className="space-y-3">
-              {leaderboard.slice(0, 5).map((entry: any, index: number) => {
-                const isCurrentUser = entry.userId === user.id;
-
-                return (
-                  <div
-                    key={entry.userId}
-                    className={`flex items-center justify-between p-3 rounded-lg ${
-                      isCurrentUser
-                        ? "bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200"
-                        : "bg-gray-50"
-                    }`}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0
-                            ? "bg-yellow-500 text-white"
-                            : index === 1
-                            ? "bg-gray-400 text-white"
-                            : index === 2
-                            ? "bg-orange-500 text-white"
-                            : "bg-gray-300 text-gray-700"
-                        }`}
-                      >
-                        {entry.rank}
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {isCurrentUser ? "You" : entry.email.split("@")[0]}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {entry.correctAnswers}/{entry.totalAnswers} correct
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-gray-900">
-                        {entry.totalScore}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Live Leaderboard */}
+        <PaginatedLeaderboard 
+          leaderboard={leaderboard} 
+          currentUserId={user?.id}
+          title="Live Leaderboard"
+        />
       </div>
     </div>
   );
